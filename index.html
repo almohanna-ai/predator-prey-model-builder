@@ -1,0 +1,1147 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Predator–Prey Model Builder</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Build predator-prey models from biological extensions of the Lotka-Volterra equations, with parameter constraints, verified references and LaTeX export.">
+
+<style>
+/* Layout: control rail beside a paper-like output sheet (model, tables, notes, references) */
+:root{
+  --bg:#EEF2F1; --sheet:#FFFFFF; --rail:#F7F9F8; --ink:#16201C; --muted:#56635E; --line:#D4DDD9; --soft:#E6ECEA;
+  --accent:#0B6E70; --accent-ink:#FFFFFF; --warn:#9A5B00; --warn-bg:#FBF1DE;
+  --t1:#009E73; --t2:#D55E00; --t3:#E69F00; --t4:#0072B2; --ph:#56B4E9; --op:#CC79A7; --nv:#8C8C8C;
+  --font-ui:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  --font-mono:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0F1513; --sheet:#151D1A; --rail:#121A17; --ink:#E3EBE7; --muted:#97A7A1; --line:#2A3632; --soft:#1C2622;
+    --accent:#4FC1C3; --accent-ink:#0B1311; --warn:#F0B95A; --warn-bg:#2A2214;
+    --t1:#3FC79A; --t2:#F08A4B; --t3:#F2BE48; --t4:#5AA7E0; --ph:#7CC6F0; --op:#E09AC5; --nv:#A7A7A7;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0F1513; --sheet:#151D1A; --rail:#121A17; --ink:#E3EBE7; --muted:#97A7A1; --line:#2A3632; --soft:#1C2622;
+  --accent:#4FC1C3; --accent-ink:#0B1311; --warn:#F0B95A; --warn-bg:#2A2214;
+  --t1:#3FC79A; --t2:#F08A4B; --t3:#F2BE48; --t4:#5AA7E0; --ph:#7CC6F0; --op:#E09AC5; --nv:#A7A7A7;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+body{background:var(--bg);color:var(--ink);font-family:var(--font-ui);font-size:15px;line-height:1.6}
+.wrap{max-width:1400px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px))}
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:16px}
+.top h1{margin:0;font-size:clamp(1.35rem,2.4vw,1.8rem);font-weight:700;line-height:1.3;text-wrap:balance}
+.top p{margin:4px 0 0;color:var(--muted);max-width:70ch}
+.layout{display:grid;grid-template-columns:minmax(0,1fr);gap:18px}
+@media (min-width:1020px){
+  .layout{grid-template-columns:minmax(300px,360px) minmax(0,1fr);align-items:start}
+  .rail{position:sticky;top:calc(env(safe-area-inset-top, 0px) + 12px);max-height:calc(100vh - 24px);overflow-y:auto}
+}
+.rail{background:var(--rail);border:1px solid var(--line);border-radius:10px;padding:14px;display:grid;gap:14px;min-width:0}
+.sec{display:grid;gap:8px}
+.sec + .sec{border-top:1px solid var(--line);padding-top:12px}
+.sec h2{margin:0;font-size:.95rem;font-weight:600;display:flex;align-items:center;gap:8px}
+.chip{display:inline-block;font-family:var(--font-mono);font-size:.72rem;font-weight:500;padding:0 6px;border-radius:4px;color:var(--ink);background:color-mix(in srgb, var(--c) 30%, transparent);border:1px solid color-mix(in srgb, var(--c) 70%, transparent);direction:ltr;line-height:1.6}
+.c-t1{--c:var(--t1)} .c-t2{--c:var(--t2)} .c-t3{--c:var(--t3)} .c-t4{--c:var(--t4)} .c-ph{--c:var(--ph)} .c-op{--c:var(--op)} .c-nv{--c:var(--nv)} .c-ac{--c:var(--accent)}
+label.row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:8px;font-size:.9rem}
+label.chk{display:flex;align-items:flex-start;gap:8px;font-size:.9rem;cursor:pointer}
+label.chk input{margin-top:5px}
+.en{font-family:var(--font-ui);font-size:.75rem;color:var(--muted);direction:ltr;unicode-bidi:isolate}
+select{font:inherit;font-size:.88rem;padding:4px 8px;border-radius:6px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);max-width:100%}
+select:disabled,input:disabled{opacity:.45}
+.disabled{opacity:.5}
+.hint{font-size:.78rem;color:var(--warn);background:var(--warn-bg);border-radius:6px;padding:4px 8px;margin:0}
+.diet{display:grid;gap:4px;direction:ltr;font-family:var(--font-mono);font-size:.8rem;justify-content:start}
+.diet .cell{display:flex;align-items:center;justify-content:center;width:42px;height:26px}
+.diet .hdr{color:var(--muted)}
+.pcards{display:grid;gap:8px}
+.pcard{display:grid;gap:6px}
+.pcards.multi .pcard{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--sheet)}
+.pcard .ph{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--muted)}
+button.lnk{justify-self:start}
+.radio{display:flex;flex-wrap:wrap;gap:6px}
+.radio label{display:flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:999px;padding:2px 10px;font-size:.85rem;cursor:pointer;background:var(--sheet)}
+.radio input{margin:0}
+
+.sheet{background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:18px 20px 22px;display:grid;gap:22px;min-width:0;direction:ltr;text-align:left}
+.sheet h2{margin:0;font-size:1.05rem;font-weight:600;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.summary{display:flex;flex-wrap:wrap;gap:6px}
+.summary .chip{font-size:.75rem}
+.block{display:grid;gap:10px;min-width:0}
+.math{overflow-x:auto;overflow-y:hidden;padding:4px 2px;font-size:1.02rem}
+.math mjx-container[display="true"]{margin:.5em 0 !important;text-align:left !important}
+.sub{font-size:.85rem;color:var(--muted);margin:0}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+button{font:inherit;font-size:.8rem;padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:var(--sheet);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--accent)}
+button.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:8px}
+table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:620px}
+th,td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top;text-align:start}
+th{font-size:.75rem;font-weight:600;color:var(--muted);background:var(--soft);letter-spacing:.02em}
+tr:last-child td{border-bottom:0}
+td.sym{white-space:nowrap}
+td.feat{font-size:.78rem;color:var(--muted)}
+.rtl{direction:rtl;text-align:right}
+ul.notes{margin:0;padding-inline-start:1.2em;display:grid;gap:6px;font-size:.9rem}
+ul.notes li.known::marker{color:var(--accent)}
+ol.refs{margin:0;padding-inline-start:1.6em;display:grid;gap:6px;font-size:.86rem}
+ol.refs a{color:var(--accent)}
+.toast{position:fixed;bottom:calc(16px + env(safe-area-inset-bottom, 0px));left:50%;transform:translateX(-50%);background:var(--ink);color:var(--sheet);padding:6px 14px;border-radius:6px;font-size:.85rem;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+textarea.fallback{width:100%;height:120px;font-family:var(--font-mono);font-size:.75rem}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion: reduce){.toast{transition:none}}
+.foot{margin-top:18px;color:var(--muted);font-size:.8rem;display:grid;gap:4px}
+.foot p{margin:0;max-width:110ch}
+.wrap:not(.mj) .math{font-family:var(--font-mono);font-size:.78rem;color:var(--muted)}
+</style>
+
+</head>
+<body>
+<div class="wrap" id="wrap" dir="ltr" lang="en">
+  <header class="top">
+    <div>
+      <h1>Predator–Prey Model Builder</h1>
+      <p>Choose the number of prey and predator species, who eats whom, and the biological extensions of each term. The builder writes the model, a table of variables and parameters with their meaning and admissible ranges, and verified references, all exportable to LaTeX.</p>
+    </div>
+    <label class="row" style="min-width:280px">Preset model
+      <select id="preset">
+        <option value="">— choose —</option>
+        <option value="lv">Lotka–Volterra (1925–26)</option>
+        <option value="rm" selected>Rosenzweig–MacArthur (1963)</option>
+        <option value="ht">Holling–Tanner (May 1973)</option>
+        <option value="fw">Freedman–Wolkowicz (1986)</option>
+        <option value="ag">Arditi–Ginzburg (1989)</option>
+        <option value="bz">Bazykin (1998)</option>
+        <option value="wzz">Wang–Zanette–Zou (2016)</option>
+        <option value="tp">Two prey, one predator (Holling II)</option>
+        <option value="cp">One prey, two competing predators</option>
+        <option value="mix">Two prey with different growth laws</option>
+        <option value="hp">Hastings–Powell (1991): food chain</option>
+        <option value="igp">Holt–Polis (1997): intraguild predation</option>
+        <option value="can">Cannibalistic predator</option>
+        <option value="mp">Mutual predation: prey eats predator</option>
+      </select>
+    </label>
+  </header>
+
+  <div class="layout">
+    <aside class="rail" aria-label="Model options">
+      <section class="sec">
+        <h2><span class="chip c-ac">N</span>Community</h2>
+        <label class="row">Number of prey species <select id="n"><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+        <label class="row">Number of predator species <select id="m"><option>1</option><option>2</option><option>3</option><option>4</option></select></label>
+        <div id="dietBox" class="sec" style="border:0;padding:0">
+          <span style="font-size:.85rem">Who eats whom <span class="en">(rows: prey, columns: predators)</span></span>
+          <div id="diet" class="diet"></div>
+        </div>
+        <div id="pdietBox" class="sec" style="border:0;padding:0">
+          <span style="font-size:.85rem">Predators eating predators <span class="en">(rows: eaten, columns: eater; diagonal: cannibalism)</span></span>
+          <div id="pdiet" class="diet"></div>
+        </div>
+        <label class="chk" id="lCanni"><input type="checkbox" id="canni"> <span>Predator eats its own kind (cannibalism)</span></label>
+        <p class="hint" id="hPdiet" hidden>Cannibalism is not available with Leslie–Gower predators: their capacity would depend on their own density.</p>
+      </section>
+
+      <section class="sec">
+        <h2><span class="chip c-t1">T₁</span>Prey growth</h2>
+        <div id="growthBox" class="pcards"></div>
+        <button type="button" id="gSame" class="lnk" hidden>Apply the settings of prey 1 to all prey</button>
+        <p class="hint" id="hGrowth" hidden>An Allee effect needs logistic growth without fear; fear needs exponential or logistic growth without an Allee effect.</p>
+        <label class="chk"><input type="checkbox" id="seasonal"> <span>Seasonal forcing of the growth rate</span></label>
+        <label class="chk" id="lPreyComp"><input type="checkbox" id="preyComp"> <span>Competition between prey species</span></label>
+      </section>
+
+      <section class="sec">
+        <h2><span class="chip c-t2">T₂</span>Predation</h2>
+        <label class="row">Functional response
+          <select id="fr">
+            <option value="H1">Holling I (linear)</option>
+            <option value="H2">Holling II</option>
+            <option value="H3">Holling III</option>
+            <option value="H4">Holling IV / group defence</option>
+            <option value="Ivlev">Ivlev</option>
+            <option value="BD">Beddington–DeAngelis</option>
+            <option value="CM">Crowley–Martin</option>
+            <option value="RD">Ratio-dependent</option>
+            <option value="HV">Hassell–Varley</option>
+            <option value="MI">Mutual interference (Hassell)</option>
+            <option value="Herd">Herd behaviour</option>
+          </select></label>
+        <label class="row">Prey refuge
+          <select id="refuge">
+            <option value="none">None</option>
+            <option value="prop">Fixed proportion</option>
+            <option value="num">Fixed number</option>
+          </select></label>
+        <label class="chk" id="lHabitat"><input type="checkbox" id="habitat"> <span>Habitat complexity</span></label>
+        <label class="chk" id="lCoop"><input type="checkbox" id="coop"> <span>Hunting cooperation</span></label>
+        <label class="chk" id="lAddFood"><input type="checkbox" id="addFood"> <span>Additional food for predators</span></label>
+        <p class="hint" id="hFR" hidden></p>
+      </section>
+
+      <section class="sec">
+        <h2><span class="chip c-t3">T₃</span><span class="chip c-t4">T₄</span>Predators</h2>
+        <label class="row">Numerical response
+          <select id="num">
+            <option value="conv">Linear conversion (e)</option>
+            <option value="LG">Leslie–Gower</option>
+            <option value="MLG">Modified Leslie–Gower</option>
+          </select></label>
+        <label class="chk" id="lPredAllee"><input type="checkbox" id="predAllee"> <span>Predator Allee effect (mate limitation)</span></label>
+        <label class="chk" id="lGest"><input type="checkbox" id="gest"> <span>Gestation (digestion) delay</span></label>
+        <label class="chk" id="lMat"><input type="checkbox" id="mat"> <span>Juvenile mortality during the delay</span></label>
+        <label class="chk" id="lDd"><input type="checkbox" id="dd"> <span>Density-dependent mortality (δy²)</span></label>
+        <label class="chk" id="lPredComp"><input type="checkbox" id="predComp"> <span>Competition between predator species</span></label>
+        <p class="hint" id="hNum" hidden>Leslie–Gower forms replace both predator gain and mortality, so the other predator options are disabled.</p>
+      </section>
+
+      <section class="sec">
+        <h2><span class="chip c-ph">Φ</span>Added terms</h2>
+        <label class="row">Prey harvesting
+          <select id="harvX"><option value="none">None</option><option value="effort">Constant effort</option><option value="yield">Constant yield</option><option value="mm">Saturating (Michaelis–Menten)</option></select></label>
+        <label class="chk"><input type="checkbox" id="immX"> <span>Prey immigration</span></label>
+        <label class="row">Predator harvesting
+          <select id="harvY"><option value="none">None</option><option value="effort">Constant effort</option><option value="yield">Constant yield</option><option value="mm">Saturating (Michaelis–Menten)</option></select></label>
+        <label class="chk"><input type="checkbox" id="immY"> <span>Predator immigration</span></label>
+        <label class="row">Prey attacking predators
+          <select id="antiPred"><option value="none">None</option><option value="kill">Kill without gain (anti-predator)</option><option value="eat">Mutual predation: prey eats predator</option></select></label>
+        <label class="chk"><input type="checkbox" id="toxic"> <span>Toxic prey</span></label>
+      </section>
+
+      <section class="sec">
+        <h2><span class="chip c-op">d/dt</span>Framework</h2>
+        <div class="radio" role="radiogroup" aria-label="Framework">
+          <label><input type="radio" name="frame" id="fODE" value="ode" checked> Ordinary (ODE)</label>
+          <label><input type="radio" name="frame" id="fPDE" value="pde"> Reaction–diffusion</label>
+          <label><input type="radio" name="frame" id="fSDE" value="sde"> Environmental noise (SDE)</label>
+        </div>
+      </section>
+    </aside>
+
+    <main class="sheet" id="sheet" aria-live="polite">
+      <div class="block">
+        <h2>Model <span class="btns"><button type="button" id="cpModel">Copy LaTeX</button></span></h2>
+        <div class="summary" id="summary"></div>
+        <div id="general" class="block" hidden>
+          <p class="sub">Indexed form</p>
+          <div class="math" id="mathGeneral"></div>
+        </div>
+        <div class="block">
+          <p class="sub" id="expLabel">System</p>
+          <div class="math" id="mathModel"></div>
+          <div class="math" id="mathWhere"></div>
+        </div>
+      </div>
+
+      <div class="block">
+        <h2>Variables and parameters
+          <span class="btns">
+            <button type="button" id="cpTable">Copy LaTeX table</button>
+          </span></h2>
+        <div class="tbl"><table id="tVars"><thead><tr><th>Symbol</th><th>Meaning</th><th>Domain</th></tr></thead><tbody></tbody></table></div>
+        <div class="tbl"><table id="tPars"><thead><tr><th>Symbol</th><th>Meaning</th><th>Constraint</th><th>Index</th><th>From</th></tr></thead><tbody></tbody></table></div>
+      </div>
+
+      <div class="block">
+        <h2>Conditions and notes</h2>
+        <ul class="notes" id="notes"></ul>
+      </div>
+
+      <div class="block">
+        <h2>References <span class="btns"><button type="button" id="cpBib">Copy BibTeX</button></span></h2>
+        <p class="sub">Each reference was verified against Crossref, OpenAlex or library catalogues.</p>
+        <ol class="refs" id="refs"></ol>
+      </div>
+      <textarea class="fallback" id="fallback" hidden aria-label="Copy fallback"></textarea>
+    </main>
+  </div>
+
+  <footer class="foot">
+    <p><strong>Predator–Prey Model Builder</strong> <span id="version"></span>. Companion to the review
+      “Where mechanisms enter the Lotka–Volterra equations: a structured review of predator–prey extensions,
+      their parameter constraints, and a model builder”.</p>
+    <p id="citeLine">How to cite: <span id="citeText">[citation of the review and DOI of this software, to be added on publication]</span></p>
+    <p>Every constraint and note shown here is traced to a definition, a symbolic derivation, a modelling convention or a cited source in the review. The page runs entirely in your browser; nothing is sent to a server.</p>
+  </footer>
+</div>
+<div class="toast" id="toast" role="status"></div>
+<script>
+window.MathJax = {
+  tex: { inlineMath: [['\\(','\\)']], displayMath: [['\\[','\\]']] },
+  svg: { fontCache: 'global' },
+  startup: { typeset: false, ready() { MathJax.startup.defaultReady(); MathJax.startup.promise.then(() => { MJ = true; render(); }); } }
+};
+let MJ = false;
+const REFS = {"wang2011allee": {"short": "Wang et al. (2011)", "cite": "Wang, J., Shi, J., & Wei, J. (2011). Predator–prey system with strong Allee effect in prey. Journal of Mathematical Biology, 62(3), 291–331.", "doi": "10.1007/s00285-010-0332-1", "bib": "@article{wang2011allee,\n  title={Predator--prey system with strong {Allee} effect in prey},\n  volume={62}, DOI={10.1007/s00285-010-0332-1},\n  number={3},\n  journal={Journal of Mathematical Biology},\n  publisher={Springer Science and Business Media LLC},\n  author={Wang, Jinfeng and Shi, Junping and Wei, Junjie},\n  year={2011},\n  pages={291--331} }"}, "dennis1989": {"short": "Dennis (1989)", "cite": "Dennis, B. (1989). Allee effects: population growth, critical density, and the chance of extinction. Natural Resource Modeling, 3(4), 481–538.", "doi": "10.1111/j.1939-7445.1989.tb00119.x", "bib": "@article{dennis1989,\n  title={{Allee} effects: population growth, critical density, and the chance of extinction},\n  volume={3}, DOI={10.1111/j.1939-7445.1989.tb00119.x},\n  number={4},\n  journal={Natural Resource Modeling},\n  publisher={Wiley},\n  author={Dennis, Brian},\n  year={1989},\n  pages={481--538} }"}, "gompertz1825": {"short": "Gompertz (1825)", "cite": "Gompertz, B. (1825). On the nature of the function expressive of the law of human mortality, and on a new mode of determining the value of life contingencies. Philosophical Transactions of the Royal Society of London, 115(115), 513–583.", "doi": "10.1098/rstl.1825.0026", "bib": "@article{gompertz1825,\n  title={On the nature of the function expressive of the law of human mortality, and on a new mode of determining the value of life contingencies}, volume={115}, DOI={10.1098/rstl.1825.0026},\n  number={115},\n  journal={Philosophical Transactions of the Royal Society of London},\n  publisher={The Royal Society},\n  author={Gompertz, Benjamin},\n  year={1825},\n  pages={513--583} }"}, "gilpin1973": {"short": "Gilpin & Ayala (1973)", "cite": "Gilpin, M. E. & Ayala, F. J. (1973). Global Models of Growth and Competition. Proceedings of the National Academy of Sciences, 70(12), 3590–3593.", "doi": "10.1073/pnas.70.12.3590", "bib": "@article{gilpin1973,\n  title={Global Models of Growth and Competition},\n  volume={70}, DOI={10.1073/pnas.70.12.3590},\n  number={12},\n  journal={Proceedings of the National Academy of Sciences},\n  publisher={National Academy of Sciences},\n  author={Gilpin, Michael E. and Ayala, Francisco J.},\n  year={1973},\n  pages={3590--3593} }"}, "hutchinson1948": {"short": "Hutchinson (1948)", "cite": "Hutchinson, G. E. (1948). Circular causal systems in ecology. Annals of the New York Academy of Sciences, 50(4), 221–246.", "doi": "10.1111/j.1749-6632.1948.tb39854.x", "bib": "@article{hutchinson1948,\n  title={Circular causal systems in ecology},\n  volume={50}, DOI={10.1111/j.1749-6632.1948.tb39854.x},\n  number={4},\n  journal={Annals of the New York Academy of Sciences},\n  publisher={Wiley},\n  author={Hutchinson, G. Evelyn},\n  year={1948},\n  pages={221--246} }"}, "zanette2011": {"short": "Zanette et al. (2011)", "cite": "Zanette, L. Y., White, A. F., Allen, M. C., & Clinchy, M. (2011). Perceived Predation Risk Reduces the Number of Offspring Songbirds Produce per Year. Science, 334(6061), 1398–1401.", "doi": "10.1126/science.1210908", "bib": "@article{zanette2011,\n  title={Perceived Predation Risk Reduces the Number of Offspring Songbirds Produce per Year},\n  volume={334}, DOI={10.1126/science.1210908},\n  number={6061},\n  journal={Science},\n  publisher={American Association for the Advancement of Science (AAAS)},\n  author={Zanette, Liana Y. and White, Aija F. and Allen, Marek C. and Clinchy, Michael},\n  year={2011},\n  pages={1398--1401} }"}, "wang2016fear": {"short": "Wang et al. (2016)", "cite": "Wang, X., Zanette, L., & Zou, X. (2016). Modelling the fear effect in predator–prey interactions. Journal of Mathematical Biology, 73(5), 1179–1204.", "doi": "10.1007/s00285-016-0989-1", "bib": "@article{wang2016fear,\n  title={Modelling the fear effect in predator--prey interactions},\n  volume={73}, DOI={10.1007/s00285-016-0989-1},\n  number={5},\n  journal={Journal of Mathematical Biology},\n  publisher={Springer Science and Business Media LLC},\n  author={Wang, Xiaoying and Zanette, Liana and Zou, Xingfu},\n  year={2016},\n  pages={1179--1204} }"}, "cushing1977": {"short": "Cushing (1977)", "cite": "Cushing, J. M. (1977). Periodic Time-Dependent Predator–Prey Systems. SIAM Journal on Applied Mathematics, 32(1), 82–95.", "doi": "10.1137/0132006", "bib": "@article{cushing1977,\n  title={Periodic Time-Dependent Predator--Prey Systems},\n  volume={32}, DOI={10.1137/0132006},\n  number={1},\n  journal={SIAM Journal on Applied Mathematics},\n  publisher={Society for Industrial \\& Applied Mathematics (SIAM)},\n  author={Cushing, J. M.},\n  year={1977},\n  pages={82--95} }"}, "cushing1977book": {"short": "Cushing (1977)", "cite": "Cushing, J. M. (1977). Integrodifferential Equations and Delay Models in Population Dynamics. Lecture Notes in Biomathematics.", "doi": "10.1007/978-3-642-93073-7", "bib": "@book{cushing1977book,\n  title={Integrodifferential Equations and Delay Models in Population Dynamics}, ISBN={9783642930737}, DOI={10.1007/978-3-642-93073-7},\n  journal={Lecture Notes in Biomathematics},\n  publisher={Springer Berlin Heidelberg},\n  author={Cushing, Jim M.},\n  year={1977} }"}, "rinaldi1993": {"short": "Rinaldi et al. (1993)", "cite": "Rinaldi, S., Muratori, S., & Kuznetsov, Y. A. (1993). Multiple attractors, catastrophes and chaos in seasonally perturbed predator–prey communities. Bulletin of Mathematical Biology, 55(1), 15–35.", "doi": "10.1016/s0092-8240(05)80060-6", "bib": "@article{rinaldi1993,\n  title={Multiple attractors, catastrophes and chaos in seasonally perturbed predator--prey communities},\n  volume={55}, DOI={10.1016/s0092-8240(05)80060-6},\n  number={1},\n  journal={Bulletin of Mathematical Biology},\n  publisher={Springer Science and Business Media LLC},\n  author={Rinaldi, S. and Muratori, S. and Kuznetsov, Yu. A.},\n  year={1993},\n  pages={15--35} }"}, "vasseur2005": {"short": "Vasseur & McCann (2005)", "cite": "Vasseur, D. A. & McCann, K. S. (2005). A Mechanistic Approach for Modeling Temperature-Dependent Consumer–Resource Dynamics. The American Naturalist, 166(2), 184–198.", "doi": "10.1086/431285", "bib": "@article{vasseur2005,\n  title={A Mechanistic Approach for Modeling Temperature-Dependent Consumer--Resource Dynamics},\n  volume={166}, DOI={10.1086/431285},\n  number={2},\n  journal={The American Naturalist},\n  publisher={University of Chicago Press},\n  author={Vasseur, David A. and McCann, Kevin S.},\n  year={2005},\n  pages={184--198} }"}, "hallam1983": {"short": "Hallam et al. (1983)", "cite": "Hallam, T. G., Clark, C. E., & Lassiter, R. R. (1983). Effects of toxicants on populations: a qualitative approach I. Equilibrium environmental exposure. Ecological Modelling, 18(3-4), 291–304.", "doi": "10.1016/0304-3800(83)90019-4", "bib": "@article{hallam1983,\n  title={Effects of toxicants on populations: a qualitative approach {I}. Equilibrium environmental exposure},\n  volume={18}, DOI={10.1016/0304-3800(83)90019-4},\n  number={3-4},\n  journal={Ecological Modelling},\n  publisher={Elsevier BV},\n  author={Hallam, T. G. and Clark, C. E. and Lassiter, R. R.},\n  year={1983},\n  pages={291--304} }"}, "loladze2000": {"short": "Loladze et al. (2000)", "cite": "Loladze, I., Kuang, Y., & Elser, J. J. (2000). Stoichiometry in Producer–Grazer Systems: Linking Energy Flow with Element Cycling. Bulletin of Mathematical Biology, 62(6), 1137–1162.", "doi": "10.1006/bulm.2000.0201", "bib": "@article{loladze2000,\n  title={Stoichiometry in Producer--Grazer Systems: Linking Energy Flow with Element Cycling},\n  volume={62}, DOI={10.1006/bulm.2000.0201},\n  number={6},\n  journal={Bulletin of Mathematical Biology},\n  publisher={Springer Science and Business Media LLC},\n  author={Loladze, Irakli and Kuang, Yang and Elser, James J.},\n  year={2000},\n  pages={1137--1162} }"}, "holling1959": {"short": "Holling (1959)", "cite": "Holling, C. S. (1959). Some Characteristics of Simple Types of Predation and Parasitism. The Canadian Entomologist, 91(7), 385–398.", "doi": "10.4039/ent91385-7", "bib": "@article{holling1959,\n  title={Some Characteristics of Simple Types of Predation and Parasitism},\n  volume={91}, DOI={10.4039/ent91385-7},\n  number={7},\n  journal={The Canadian Entomologist},\n  publisher={Cambridge University Press (CUP)},\n  author={Holling, C. S.},\n  year={1959},\n  pages={385--398} }"}, "rosenzweig1963": {"short": "Rosenzweig & MacArthur (1963)", "cite": "Rosenzweig, M. L. & MacArthur, R. H. (1963). Graphical Representation and Stability Conditions of Predator–Prey Interactions. The American Naturalist, 97(895), 209–223.", "doi": "10.1086/282272", "bib": "@article{rosenzweig1963,\n  title={Graphical Representation and Stability Conditions of Predator--Prey Interactions},\n  volume={97}, DOI={10.1086/282272},\n  number={895},\n  journal={The American Naturalist},\n  publisher={University of Chicago Press},\n  author={Rosenzweig, M. L. and MacArthur, R. H.},\n  year={1963},\n  pages={209--223} }"}, "andrews1968": {"short": "Andrews (1968)", "cite": "Andrews, J. F. (1968). A mathematical model for the continuous culture of microorganisms utilizing inhibitory substrates. Biotechnology and Bioengineering, 10(6), 707–723.", "doi": "10.1002/bit.260100602", "bib": "@article{andrews1968,\n  title={A mathematical model for the continuous culture of microorganisms utilizing inhibitory substrates},\n  volume={10}, DOI={10.1002/bit.260100602},\n  number={6},\n  journal={Biotechnology and Bioengineering},\n  publisher={Wiley},\n  author={Andrews, John F.},\n  year={1968},\n  pages={707--723} }"}, "freedman1986": {"short": "Freedman & Wolkowicz (1986)", "cite": "Freedman, H. I. & Wolkowicz, G. S. K. (1986). Predator–prey systems with group defence: The paradox of enrichment revisited. Bulletin of Mathematical Biology, 48(5-6), 493–508.", "doi": "10.1016/s0092-8240(86)90004-2", "bib": "@article{freedman1986,\n  title={Predator--prey systems with group defence: The paradox of enrichment revisited},\n  volume={48}, DOI={10.1016/s0092-8240(86)90004-2},\n  number={5-6},\n  journal={Bulletin of Mathematical Biology},\n  publisher={Springer Science and Business Media LLC},\n  author={Freedman, H. I. and Wolkowicz, Gail S. K.},\n  year={1986},\n  pages={493--508} }"}, "beddington1975": {"short": "Beddington (1975)", "cite": "Beddington, J. R. (1975). Mutual Interference Between Parasites or Predators and its Effect on Searching Efficiency. The Journal of Animal Ecology, 44(1), 331–340.", "doi": "10.2307/3866", "bib": "@article{beddington1975,\n  title={Mutual Interference Between Parasites or Predators and its Effect on Searching Efficiency},\n  volume={44}, DOI={10.2307/3866},\n  number={1},\n  journal={The Journal of Animal Ecology},\n  publisher={JSTOR},\n  author={Beddington, J. R.},\n  year={1975},\n  pages={331--340} }"}, "deangelis1975": {"short": "DeAngelis et al. (1975)", "cite": "DeAngelis, D. L., Goldstein, R. A., & O'Neill, R. V. (1975). A Model for Tropic Interaction. Ecology, 56(4), 881–892.", "doi": "10.2307/1936298", "bib": "@article{deangelis1975,\n  title={A Model for Tropic Interaction},\n  volume={56}, DOI={10.2307/1936298},\n  number={4},\n  journal={Ecology},\n  publisher={Wiley},\n  author={DeAngelis, D. L. and Goldstein, R. A. and O'Neill, R. V.},\n  year={1975},\n  pages={881--892} }"}, "crowley1989": {"short": "Crowley & Martin (1989)", "cite": "Crowley, P. H. & Martin, E. K. (1989). Functional Responses and Interference within and between Year Classes of a Dragonfly Population. Journal of the North American Benthological Society, 8(3), 211–221.", "doi": "10.2307/1467324", "bib": "@article{crowley1989,\n  title={Functional Responses and Interference within and between Year Classes of a Dragonfly Population},\n  volume={8}, DOI={10.2307/1467324},\n  number={3},\n  journal={Journal of the North American Benthological Society},\n  publisher={University of Chicago Press},\n  author={Crowley, Philip H. and Martin, Elizabeth K.},\n  year={1989},\n  pages={211--221} }"}, "arditi1989": {"short": "Arditi & Ginzburg (1989)", "cite": "Arditi, R. & Ginzburg, L. R. (1989). Coupling in predator–prey dynamics: Ratio-Dependence. Journal of Theoretical Biology, 139(3), 311–326.", "doi": "10.1016/s0022-5193(89)80211-5", "bib": "@article{arditi1989,\n  title={Coupling in predator--prey dynamics: Ratio-Dependence},\n  volume={139}, DOI={10.1016/s0022-5193(89)80211-5},\n  number={3},\n  journal={Journal of Theoretical Biology},\n  publisher={Elsevier BV},\n  author={Arditi, Roger and Ginzburg, Lev R.},\n  year={1989},\n  pages={311--326} }"}, "kuang1998": {"short": "Kuang & Beretta (1998)", "cite": "Kuang, Y. & Beretta, E. (1998). Global qualitative analysis of a ratio-dependent predator–prey system. Journal of Mathematical Biology, 36(4), 389–406.", "doi": "10.1007/s002850050105", "bib": "@article{kuang1998,\n  title={Global qualitative analysis of a ratio-dependent predator--prey system},\n  volume={36}, DOI={10.1007/s002850050105},\n  number={4},\n  journal={Journal of Mathematical Biology},\n  publisher={Springer Science and Business Media LLC},\n  author={Kuang, Yang and Beretta, Edoardo},\n  year={1998},\n  pages={389--406} }"}, "hassell1969": {"short": "Hassell & Varley (1969)", "cite": "Hassell, M. P. & Varley, G. C. (1969). New Inductive Population Model for Insect Parasites and its Bearing on Biological Control. Nature, 223(5211), 1133–1137.", "doi": "10.1038/2231133a0", "bib": "@article{hassell1969,\n  title={New Inductive Population Model for Insect Parasites and its Bearing on Biological Control},\n  volume={223}, DOI={10.1038/2231133a0},\n  number={5211},\n  journal={Nature},\n  publisher={Springer Science and Business Media LLC},\n  author={Hassell, M. P. and Varley, G. C.},\n  year={1969},\n  pages={1133--1137} }"}, "hassell1971": {"short": "Hassell (1971)", "cite": "Hassell, M. P. (1971). Mutual Interference between Searching Insect Parasites. The Journal of Animal Ecology, 40(2), 473–486.", "doi": "10.2307/3256", "bib": "@article{hassell1971,\n  title={Mutual Interference between Searching Insect Parasites},\n  volume={40}, DOI={10.2307/3256},\n  number={2},\n  journal={The Journal of Animal Ecology},\n  publisher={JSTOR},\n  author={Hassell, M. P.},\n  year={1971},\n  pages={473--486} }"}, "ajraldi2011": {"short": "Ajraldi et al. (2011)", "cite": "Ajraldi, V., Pittavino, M., & Venturino, E. (2011). Modeling herd behavior in population systems. Nonlinear Analysis: Real World Applications, 12(4), 2319–2338.", "doi": "10.1016/j.nonrwa.2011.02.002", "bib": "@article{ajraldi2011,\n  title={Modeling herd behavior in population systems},\n  volume={12}, DOI={10.1016/j.nonrwa.2011.02.002},\n  number={4},\n  journal={Nonlinear Analysis: Real World Applications},\n  publisher={Elsevier BV},\n  author={Ajraldi, Valerio and Pittavino, Marta and Venturino, Ezio},\n  year={2011},\n  pages={2319--2338} }"}, "gonzalez2003": {"short": "Gonz\\'alez-Olivares & Ramos-Jiliberto (2003)", "cite": "Gonz\\'alez-Olivares, E. & Ramos-Jiliberto, R. (2003). Dynamic consequences of prey refuges in a simple model system: more prey, fewer predators and enhanced stability. Ecological Modelling, 166(1-2), 135–146.", "doi": "10.1016/s0304-3800(03)00131-5", "bib": "@article{gonzalez2003,\n  title={Dynamic consequences of prey refuges in a simple model system: more prey, fewer predators and enhanced stability},\n  volume={166}, DOI={10.1016/s0304-3800(03)00131-5},\n  number={1-2},\n  journal={Ecological Modelling},\n  publisher={Elsevier BV},\n  author={Gonz{\\'a}lez-Olivares, Eduardo and Ramos-Jiliberto, Rodrigo},\n  year={2003},\n  pages={135--146} }"}, "bairagi2011": {"short": "Bairagi & Jana (2011)", "cite": "Bairagi, N. & Jana, D. (2011). On the stability and Hopf bifurcation of a delay-induced predator–prey system with habitat complexity. Applied Mathematical Modelling, 35(7), 3255–3267.", "doi": "10.1016/j.apm.2011.01.025", "bib": "@article{bairagi2011,\n  title={On the stability and {Hopf} bifurcation of a delay-induced predator--prey system with habitat complexity},\n  volume={35}, DOI={10.1016/j.apm.2011.01.025},\n  number={7},\n  journal={Applied Mathematical Modelling},\n  publisher={Elsevier BV},\n  author={Bairagi, N. and Jana, D.},\n  year={2011},\n  pages={3255--3267} }"}, "teixeiraalves2017": {"short": "Teixeira Alves & Hilker (2017)", "cite": "Teixeira Alves, M. & Hilker, F. M. (2017). Hunting cooperation and Allee effects in predators. Journal of Theoretical Biology, 419, 13–22.", "doi": "10.1016/j.jtbi.2017.02.002", "bib": "@article{teixeiraalves2017,\n  title={Hunting cooperation and {Allee} effects in predators},\n  volume={419}, DOI={10.1016/j.jtbi.2017.02.002},\n  journal={Journal of Theoretical Biology},\n  publisher={Elsevier BV},\n  author={Teixeira Alves, Micka{\\\"e}l and Hilker, Frank M.},\n  year={2017},\n  pages={13--22} }"}, "srinivasu2007": {"short": "Srinivasu et al. (2007)", "cite": "Srinivasu, P. D. N., Prasad, B. S. R. V., & Venkatesulu, M. (2007). Biological control through provision of additional food to predators: A theoretical study. Theoretical Population Biology, 72(1), 111–120.", "doi": "10.1016/j.tpb.2007.03.011", "bib": "@article{srinivasu2007,\n  title={Biological control through provision of additional food to predators: A theoretical study},\n  volume={72}, DOI={10.1016/j.tpb.2007.03.011},\n  number={1},\n  journal={Theoretical Population Biology},\n  publisher={Elsevier BV},\n  author={Srinivasu, P. D. N. and Prasad, B. S. R. V. and Venkatesulu, M.},\n  year={2007},\n  pages={111--120} }"}, "brauer1979": {"short": "Brauer & Soudack (1979)", "cite": "Brauer, F. & Soudack, A. C. (1979). Stability regions in predator–prey systems with constant-rate prey harvesting. Journal of Mathematical Biology, 8(1), 55–71.", "doi": "10.1007/bf00280586", "bib": "@article{brauer1979,\n  title={Stability regions in predator--prey systems with constant-rate prey harvesting},\n  volume={8}, DOI={10.1007/bf00280586},\n  number={1},\n  journal={Journal of Mathematical Biology},\n  publisher={Springer Science and Business Media LLC},\n  author={Brauer, F. and Soudack, A. C.},\n  year={1979},\n  pages={55--71} }"}, "gupta2013": {"short": "Gupta & Chandra (2013)", "cite": "Gupta, R. P. & Chandra, P. (2013). Bifurcation analysis of modified Leslie–Gower predator–prey model with Michaelis–Menten type prey harvesting. Journal of Mathematical Analysis and Applications, 398(1), 278–295.", "doi": "10.1016/j.jmaa.2012.08.057", "bib": "@article{gupta2013,\n  title={Bifurcation analysis of modified {Leslie}--{Gower} predator--prey model with {Michaelis}--{Menten} type prey harvesting},\n  volume={398}, DOI={10.1016/j.jmaa.2012.08.057},\n  number={1},\n  journal={Journal of Mathematical Analysis and Applications},\n  publisher={Elsevier BV},\n  author={Gupta, R. P. and Chandra, Peeyush},\n  year={2013},\n  pages={278--295} }"}, "ludwig1978": {"short": "Ludwig et al. (1978)", "cite": "Ludwig, D., Jones, D. D., & Holling, C. S. (1978). Qualitative Analysis of Insect Outbreak Systems: The Spruce Budworm and Forest. The Journal of Animal Ecology, 47(1), 315–332.", "doi": "10.2307/3939", "bib": "@article{ludwig1978,\n  title={Qualitative Analysis of Insect Outbreak Systems: The Spruce Budworm and Forest},\n  volume={47}, DOI={10.2307/3939},\n  number={1},\n  journal={The Journal of Animal Ecology},\n  publisher={JSTOR},\n  author={Ludwig, D. and Jones, D. D. and Holling, C. S.},\n  year={1978},\n  pages={315--332} }"}, "tahara2018": {"short": "Tahara et al. (2018)", "cite": "Tahara, T., Gavina, M. K. A., Kawano, T., Tubay, J. M., Rabajante, J. F., Ito, H., Morita, S., Ichinose, G., Okabe, T., Togashi, T., Tainaka, K., Shimizu, A., Nagatani, T., & Yoshimura, J. (2018). Asymptotic stability of a modified Lotka–Volterra model with small immigrations. Scientific Reports, 8(1), 7029.", "doi": "10.1038/s41598-018-25436-2", "bib": "@article{tahara2018,\n  title={Asymptotic stability of a modified {Lotka}--{Volterra} model with small immigrations},\n  volume={8}, DOI={10.1038/s41598-018-25436-2},\n  number={1},\n  journal={Scientific Reports},\n  publisher={Springer Science and Business Media LLC},\n  author={Tahara, Takeru and Gavina, Maica Krizna Areja and Kawano, Takenori and Tubay, Jerrold M. and Rabajante, Jomar F. and Ito, Hiromu and Morita, Satoru and Ichinose, Genki and Okabe, Takuya and Togashi, Tatsuya and Tainaka, Kei-ichi and Shimizu, Akira and Nagatani, Takashi and Yoshimura, Jin},\n  year={2018},\n  pages={7029} }"}, "polis1989": {"short": "Polis et al. (1989)", "cite": "Polis, G. A., Myers, C. A., & Holt, R. D. (1989). The Ecology and Evolution of Intraguild Predation: Potential Competitors That Eat Each Other. Annual Review of Ecology and Systematics, 20(1), 297–330.", "doi": "10.1146/annurev.es.20.110189.001501", "bib": "@article{polis1989,\n  title={The Ecology and Evolution of Intraguild Predation: Potential Competitors That Eat Each Other},\n  volume={20}, DOI={10.1146/annurev.es.20.110189.001501},\n  number={1},\n  journal={Annual Review of Ecology and Systematics},\n  publisher={Annual Reviews},\n  author={Polis, G A and Myers, C A and Holt, R D},\n  year={1989},\n  pages={297--330} }"}, "almohanna2025": {"short": "Ghazi Al-Mohanna et al. (2025)", "cite": "Ghazi Al-Mohanna, S. M., Xia, Y., & Zou, L. (2025). Eat and be eaten: Modeling and analysis. Discrete and Continuous Dynamical Systems - B, 30(8), 2785–2805.", "doi": "10.3934/dcdsb.2024190", "bib": "@article{almohanna2025,\n  title={Eat and be eaten: Modeling and analysis},\n  volume={30}, DOI={10.3934/dcdsb.2024190},\n  number={8},\n  journal={Discrete and Continuous Dynamical Systems - B},\n  publisher={American Institute of Mathematical Sciences (AIMS)},\n  author={Ghazi Al-Mohanna, Salam M. and Xia, Yonghui and Zou, Lan},\n  year={2025},\n  pages={2785--2805} }"}, "gourley2004": {"short": "Gourley & Kuang (2004)", "cite": "Gourley, S. A. & Kuang, Y. (2004). A stage structured predator–prey model and its dependence on maturation delay and death rate. Journal of Mathematical Biology, 49(2), 188–200.", "doi": "10.1007/s00285-004-0278-2", "bib": "@article{gourley2004,\n  title={A stage structured predator--prey model and its dependence on maturation delay and death rate},\n  volume={49}, DOI={10.1007/s00285-004-0278-2},\n  number={2},\n  journal={Journal of Mathematical Biology},\n  publisher={Springer Science and Business Media LLC},\n  author={Gourley, Stephen A. and Kuang, Yang},\n  year={2004},\n  pages={188--200} }"}, "beretta2002": {"short": "Beretta & Kuang (2002)", "cite": "Beretta, E. & Kuang, Y. (2002). Geometric Stability Switch Criteria in Delay Differential Systems with Delay Dependent Parameters. SIAM Journal on Mathematical Analysis, 33(5), 1144–1165.", "doi": "10.1137/s0036141000376086", "bib": "@article{beretta2002,\n  title={Geometric Stability Switch Criteria in Delay Differential Systems with Delay Dependent Parameters},\n  volume={33}, DOI={10.1137/s0036141000376086},\n  number={5},\n  journal={SIAM Journal on Mathematical Analysis},\n  publisher={Society for Industrial \\& Applied Mathematics (SIAM)},\n  author={Beretta, Edoardo and Kuang, Yang},\n  year={2002},\n  pages={1144--1165} }"}, "courchamp2008": {"short": "Courchamp et al. (2008)", "cite": "Courchamp, F., Berec, L., & Gascoigne, J. (2008). Allee Effects in Ecology and Conservation. Oxford University Press.", "doi": "10.1093/acprof:oso/9780198570301.001.0001", "bib": "@book{courchamp2008,\n  title={{Allee} Effects in Ecology and Conservation}, ISBN={9780198570301}, DOI={10.1093/acprof:oso/9780198570301.001.0001},\n  publisher={Oxford University Press},\n  author={Courchamp, Franck and Berec, Ludek and Gascoigne, Joanna},\n  year={2008} }"}, "leslie1948": {"short": "Leslie (1948)", "cite": "Leslie, P. H. (1948). Some Further Notes on the Use of Matrices in Population Mathematics. Biometrika, 35(3/4), 213–245.", "doi": "10.2307/2332342", "bib": "@article{leslie1948,\n  title={Some Further Notes on the Use of Matrices in Population Mathematics},\n  volume={35}, DOI={10.2307/2332342},\n  number={3/4},\n  journal={Biometrika},\n  publisher={JSTOR},\n  author={Leslie, P. H.},\n  year={1948},\n  pages={213--245} }"}, "leslie1960": {"short": "Leslie & Gower (1960)", "cite": "Leslie, P. H. & Gower, J. C. (1960). The Properties of a Stochastic Model for the Predator–Prey Type of Interaction Between Two Species. Biometrika, 47(3/4), 219–234.", "doi": "10.2307/2333294", "bib": "@article{leslie1960,\n  title={The Properties of a Stochastic Model for the Predator--Prey Type of Interaction Between Two Species},\n  volume={47}, DOI={10.2307/2333294},\n  number={3/4},\n  journal={Biometrika},\n  publisher={JSTOR},\n  author={Leslie, P. H. and Gower, J. C.},\n  year={1960},\n  pages={219--234} }"}, "azizalaoui2003": {"short": "Aziz-Alaoui & Daher Okiye (2003)", "cite": "Aziz-Alaoui, M. A. & Daher Okiye, M. (2003). Boundedness and global stability for a predator–prey model with modified Leslie–Gower and Holling-type II schemes. Applied Mathematics Letters, 16(7), 1069–1075.", "doi": "10.1016/s0893-9659(03)90096-6", "bib": "@article{azizalaoui2003,\n  title={Boundedness and global stability for a predator--prey model with modified {Leslie}--{Gower} and {Holling}-type {II} schemes},\n  volume={16}, DOI={10.1016/s0893-9659(03)90096-6},\n  number={7},\n  journal={Applied Mathematics Letters},\n  publisher={Elsevier BV},\n  author={Aziz-Alaoui, M. A. and Daher Okiye, M.},\n  year={2003},\n  pages={1069--1075} }"}, "steele1992": {"short": "Steele & Henderson (1992)", "cite": "Steele, J. H. & Henderson, E. W. (1992). The role of predation in plankton models. Journal of Plankton Research, 14(1), 157–172.", "doi": "10.1093/plankt/14.1.157", "bib": "@article{steele1992,\n  title={The role of predation in plankton models},\n  volume={14}, DOI={10.1093/plankt/14.1.157},\n  number={1},\n  journal={Journal of Plankton Research},\n  publisher={Oxford University Press (OUP)},\n  author={Steele, John H. and Henderson, Eric W.},\n  year={1992},\n  pages={157--172} }"}, "freedman1991": {"short": "Freedman & Shukla (1991)", "cite": "Freedman, H. I. & Shukla, J. B. (1991). Models for the effect of toxicant in single-species and predator–prey systems. Journal of Mathematical Biology, 30(1), 15–30.", "doi": "10.1007/bf00168004", "bib": "@article{freedman1991,\n  title={Models for the effect of toxicant in single-species and predator--prey systems},\n  volume={30}, DOI={10.1007/bf00168004},\n  number={1},\n  journal={Journal of Mathematical Biology},\n  publisher={Springer Science and Business Media LLC},\n  author={Freedman, H. I. and Shukla, J. B.},\n  year={1991},\n  pages={15--30} }"}, "chaudhuri1996": {"short": "Chaudhuri & Saha Ray (1996)", "cite": "Chaudhuri, K. S. & Saha Ray, S. (1996). On the combined harvesting of a prey–predator system. Journal of Biological Systems, 04(03), 373–389.", "doi": "10.1142/s0218339096000259", "bib": "@article{chaudhuri1996,\n  title={On the combined harvesting of a prey--predator system},\n  volume={04}, DOI={10.1142/s0218339096000259},\n  number={03},\n  journal={Journal of Biological Systems},\n  publisher={World Scientific Pub Co Pte Lt},\n  author={Chaudhuri, K. S. and Saha Ray, Sumita},\n  year={1996},\n  pages={373--389} }"}, "tang2015": {"short": "Tang & Xiao (2015)", "cite": "Tang, B. & Xiao, Y. (2015). Bifurcation analysis of a predator–prey model with anti-predator behaviour. Chaos, Solitons & Fractals, 70, 58–68.", "doi": "10.1016/j.chaos.2014.11.008", "bib": "@article{tang2015,\n  title={Bifurcation analysis of a predator--prey model with anti-predator behaviour},\n  volume={70}, DOI={10.1016/j.chaos.2014.11.008},\n  journal={Chaos, Solitons \\& Fractals},\n  publisher={Elsevier BV},\n  author={Tang, Biao and Xiao, Yanni},\n  year={2015},\n  pages={58--68} }"}, "chattopadhyay2002": {"short": "Chattopadhyay et al. (2002)", "cite": "Chattopadhyay, J., Sarkar, R. R., & Mandal, S. (2002). Toxin-producing Plankton May Act as a Biological Control for Planktonic Blooms–-Field Study and Mathematical Modelling. Journal of Theoretical Biology, 215(3), 333–344.", "doi": "10.1006/jtbi.2001.2510", "bib": "@article{chattopadhyay2002,\n  title={Toxin-producing Plankton May Act as a Biological Control for Planktonic Blooms---Field Study and Mathematical Modelling},\n  volume={215}, DOI={10.1006/jtbi.2001.2510},\n  number={3},\n  journal={Journal of Theoretical Biology},\n  publisher={Elsevier BV},\n  author={Chattopadhyay, J. and Sarkar, R. R. and Mandal, S.},\n  year={2002},\n  pages={333--344} }"}, "skellam1951": {"short": "Skellam (1951)", "cite": "Skellam, J. G. (1951). Random Dispersal in Theoretical Populations. Biometrika, 38(1/2), 196–218.", "doi": "10.2307/2332328", "bib": "@article{skellam1951,\n  title={Random Dispersal in Theoretical Populations},\n  volume={38}, DOI={10.2307/2332328},\n  number={1/2},\n  journal={Biometrika},\n  publisher={JSTOR},\n  author={Skellam, J. G.},\n  year={1951},\n  pages={196--218} }"}, "segel1972": {"short": "Segel & Jackson (1972)", "cite": "Segel, L. A. & Jackson, J. L. (1972). Dissipative structure: An explanation and an ecological example. Journal of Theoretical Biology, 37(3), 545–559.", "doi": "10.1016/0022-5193(72)90090-2", "bib": "@article{segel1972,\n  title={Dissipative structure: An explanation and an ecological example},\n  volume={37}, DOI={10.1016/0022-5193(72)90090-2},\n  number={3},\n  journal={Journal of Theoretical Biology},\n  publisher={Elsevier BV},\n  author={Segel, Lee A. and Jackson, Julius L.},\n  year={1972},\n  pages={545--559} }"}, "shigesada1979": {"short": "Shigesada et al. (1979)", "cite": "Shigesada, N., Kawasaki, K., & Teramoto, E. (1979). Spatial segregation of interacting species. Journal of Theoretical Biology, 79(1), 83–99.", "doi": "10.1016/0022-5193(79)90258-3", "bib": "@article{shigesada1979,\n  title={Spatial segregation of interacting species},\n  volume={79}, DOI={10.1016/0022-5193(79)90258-3},\n  number={1},\n  journal={Journal of Theoretical Biology},\n  publisher={Elsevier BV},\n  author={Shigesada, Nanako and Kawasaki, Kohkichi and Teramoto, Ei},\n  year={1979},\n  pages={83--99} }"}, "kareiva1987": {"short": "Kareiva & Odell (1987)", "cite": "Kareiva, P. & Odell, G. (1987). Swarms of Predators Exhibit ``Preytaxis'' if Individual Predators Use Area-Restricted Search. The American Naturalist, 130(2), 233–270.", "doi": "10.1086/284707", "bib": "@article{kareiva1987,\n  title={Swarms of Predators Exhibit ``Preytaxis'' if Individual Predators Use Area-Restricted Search},\n  volume={130}, DOI={10.1086/284707},\n  number={2},\n  journal={The American Naturalist},\n  publisher={University of Chicago Press},\n  author={Kareiva, Peter and Odell, Garrett},\n  year={1987},\n  pages={233--270} }"}, "merchant2011": {"short": "Merchant & Nagata (2011)", "cite": "Merchant, S. M. & Nagata, W. (2011). Instabilities and spatiotemporal patterns behind predator invasions with nonlocal prey competition. Theoretical Population Biology, 80(4), 289–297.", "doi": "10.1016/j.tpb.2011.10.001", "bib": "@article{merchant2011,\n  title={Instabilities and spatiotemporal patterns behind predator invasions with nonlocal prey competition},\n  volume={80}, DOI={10.1016/j.tpb.2011.10.001},\n  number={4},\n  journal={Theoretical Population Biology},\n  publisher={Elsevier BV},\n  author={Merchant, Sandra M. and Nagata, Wayne},\n  year={2011},\n  pages={289--297} }"}, "shi2019": {"short": "Shi et al. (2019)", "cite": "Shi, J., Wang, C., & Wang, H. (2019). Diffusive spatial movement with memory and maturation delays. Nonlinearity, 32(9), 3188–3208.", "doi": "10.1088/1361-6544/ab1f2f", "bib": "@article{shi2019,\n  title={Diffusive spatial movement with memory and maturation delays},\n  volume={32}, DOI={10.1088/1361-6544/ab1f2f},\n  number={9},\n  journal={Nonlinearity},\n  publisher={IOP Publishing},\n  author={Shi, Junping and Wang, Chuncheng and Wang, Hao},\n  year={2019},\n  pages={3188--3208} }"}, "nakao2010": {"short": "Nakao & Mikhailov (2010)", "cite": "Nakao, H. & Mikhailov, A. S. (2010). Turing patterns in network-organized activator–inhibitor systems. Nature Physics, 6(7), 544–550.", "doi": "10.1038/nphys1651", "bib": "@article{nakao2010,\n  title={{Turing} patterns in network-organized activator--inhibitor systems},\n  volume={6}, DOI={10.1038/nphys1651},\n  number={7},\n  journal={Nature Physics},\n  publisher={Springer Science and Business Media LLC},\n  author={Nakao, Hiroya and Mikhailov, Alexander S.},\n  year={2010},\n  pages={544--550} }"}, "rudnicki2003": {"short": "Rudnicki (2003)", "cite": "Rudnicki, R. (2003). Long-time behaviour of a stochastic prey–predator model. Stochastic Processes and their Applications, 108(1), 93–107.", "doi": "10.1016/s0304-4149(03)00090-5", "bib": "@article{rudnicki2003,\n  title={Long-time behaviour of a stochastic prey--predator model},\n  volume={108}, DOI={10.1016/s0304-4149(03)00090-5},\n  number={1},\n  journal={Stochastic Processes and their Applications},\n  publisher={Elsevier BV},\n  author={Rudnicki, Ryszard},\n  year={2003},\n  pages={93--107} }"}, "takeuchi2006": {"short": "Takeuchi et al. (2006)", "cite": "Takeuchi, Y., Du, N. H., Hieu, N. T., & Sato, K. (2006). Evolution of predator–prey systems described by a Lotka–Volterra equation under random environment. Journal of Mathematical Analysis and Applications, 323(2), 938–957.", "doi": "10.1016/j.jmaa.2005.11.009", "bib": "@article{takeuchi2006,\n  title={Evolution of predator--prey systems described by a {Lotka}--{Volterra} equation under random environment},\n  volume={323}, DOI={10.1016/j.jmaa.2005.11.009},\n  number={2},\n  journal={Journal of Mathematical Analysis and Applications},\n  publisher={Elsevier BV},\n  author={Takeuchi, Y. and Du, N. H. and Hieu, N. T. and Sato, K.},\n  year={2006},\n  pages={938--957} }"}, "bao2011": {"short": "Bao et al. (2011)", "cite": "Bao, J., Mao, X., Yin, G., & Yuan, C. (2011). Competitive Lotka–Volterra population dynamics with jumps. Nonlinear Analysis: Theory, Methods & Applications, 74(17), 6601–6616.", "doi": "10.1016/j.na.2011.06.043", "bib": "@article{bao2011,\n  title={Competitive {Lotka}--{Volterra} population dynamics with jumps},\n  volume={74}, DOI={10.1016/j.na.2011.06.043},\n  number={17},\n  journal={Nonlinear Analysis: Theory, Methods \\& Applications},\n  publisher={Elsevier BV},\n  author={Bao, Jianhai and Mao, Xuerong and Yin, Geroge and Yuan, Chenggui},\n  year={2011},\n  pages={6601--6616} }"}, "liu2014levy": {"short": "Liu & Bai (2014)", "cite": "Liu, M. & Bai, C. Z. (2014). On a stochastic delayed predator–prey model with Lévy jumps. Applied Mathematics and Computation, 228, 563–570.", "doi": "10.1016/j.amc.2013.12.026", "bib": "@article{liu2014levy,\n  title={On a stochastic delayed predator--prey model with {L{\\'e}vy} jumps},\n  volume={228}, DOI={10.1016/j.amc.2013.12.026},\n  journal={Applied Mathematics and Computation},\n  publisher={Elsevier BV},\n  author={Liu, Meng and Bai, Chuan Zhi},\n  year={2014},\n  pages={563--570} }"}, "mckane2005": {"short": "McKane & Newman (2005)", "cite": "McKane, A. J. & Newman, T. J. (2005). Predator–Prey Cycles from Resonant Amplification of Demographic Stochasticity. Physical Review Letters, 94(21), 218102.", "doi": "10.1103/physrevlett.94.218102", "bib": "@article{mckane2005,\n  title={Predator--Prey Cycles from Resonant Amplification of Demographic Stochasticity},\n  volume={94}, DOI={10.1103/physrevlett.94.218102},\n  number={21},\n  journal={Physical Review Letters},\n  publisher={American Physical Society (APS)},\n  author={McKane, A. J. and Newman, T. J.},\n  year={2005},\n  pages={218102} }"}, "tang2005": {"short": "Tang & Cheke (2005)", "cite": "Tang, S. & Cheke, R. A. (2005). State-dependent impulsive models of integrated pest management (IPM) strategies and their dynamic consequences. Journal of Mathematical Biology, 50(3), 257–292.", "doi": "10.1007/s00285-004-0290-6", "bib": "@article{tang2005,\n  title={State-dependent impulsive models of integrated pest management ({IPM}) strategies and their dynamic consequences},\n  volume={50}, DOI={10.1007/s00285-004-0290-6},\n  number={3},\n  journal={Journal of Mathematical Biology},\n  publisher={Springer Science and Business Media LLC},\n  author={Tang, Sanyi and Cheke, Robert A.},\n  year={2005},\n  pages={257--292} }"}, "tang2012": {"short": "Tang et al. (2012)", "cite": "Tang, S., Liang, J., Xiao, Y., & Cheke, R. A. (2012). Sliding Bifurcations of Filippov Two Stage Pest Control Models with Economic Thresholds. SIAM Journal on Applied Mathematics, 72(4), 1061–1080.", "doi": "10.1137/110847020", "bib": "@article{tang2012,\n  title={Sliding Bifurcations of {Filippov} Two Stage Pest Control Models with Economic Thresholds},\n  volume={72}, DOI={10.1137/110847020},\n  number={4},\n  journal={SIAM Journal on Applied Mathematics},\n  publisher={Society for Industrial \\& Applied Mathematics (SIAM)},\n  author={Tang, Sanyi and Liang, Juhua and Xiao, Yanni and Cheke, Robert A.},\n  year={2012},\n  pages={1061--1080} }"}, "aiello1990": {"short": "Aiello & Freedman (1990)", "cite": "Aiello, W. G. & Freedman, H. I. (1990). A time-delay model of single-species growth with stage structure. Mathematical Biosciences, 101(2), 139–153.", "doi": "10.1016/0025-5564(90)90019-u", "bib": "@article{aiello1990,\n  title={A time-delay model of single-species growth with stage structure},\n  volume={101}, DOI={10.1016/0025-5564(90)90019-u},\n  number={2},\n  journal={Mathematical Biosciences},\n  publisher={Elsevier BV},\n  author={Aiello, Walter G. and Freedman, H. I.},\n  year={1990},\n  pages={139--153} }"}, "gurtin1974": {"short": "Gurtin & MacCamy (1974)", "cite": "Gurtin, M. E. & MacCamy, R. C. (1974). Non-linear age-dependent population dynamics. Archive for Rational Mechanics and Analysis, 54(3), 281–300.", "doi": "10.1007/bf00250793", "bib": "@article{gurtin1974,\n  title={Non-linear age-dependent population dynamics},\n  volume={54}, DOI={10.1007/bf00250793},\n  number={3},\n  journal={Archive for Rational Mechanics and Analysis},\n  publisher={Springer Science and Business Media LLC},\n  author={Gurtin, Morton E. and MacCamy, Richard C.},\n  year={1974},\n  pages={281--300} }"}, "deroos2013": {"short": "de Roos & Persson (2013)", "cite": "de Roos, A. M. & Persson, L. (2013). Population and Community Ecology of Ontogenetic Development. Princeton University Press.", "doi": "10.23943/princeton/9780691137575.001.0001", "bib": "@book{deroos2013,\n  title={Population and Community Ecology of Ontogenetic Development}, ISBN={9781400845613}, DOI={10.23943/princeton/9780691137575.001.0001},\n  publisher={Princeton University Press},\n  author={de Roos, Andr{\\'e} M. and Persson, Lennart},\n  year={2013} }"}, "hadeler1989": {"short": "Hadeler & Freedman (1989)", "cite": "Hadeler, K. P. & Freedman, H. I. (1989). Predator–prey populations with parasitic infection. Journal of Mathematical Biology, 27(6), 609–631.", "doi": "10.1007/bf00276947", "bib": "@article{hadeler1989,\n  title={Predator--prey populations with parasitic infection},\n  volume={27}, DOI={10.1007/bf00276947},\n  number={6},\n  journal={Journal of Mathematical Biology},\n  publisher={Springer Science and Business Media LLC},\n  author={Hadeler, K. P. and Freedman, H. I.},\n  year={1989},\n  pages={609--631} }"}, "chattopadhyay1999": {"short": "Chattopadhyay & Arino (1999)", "cite": "Chattopadhyay, J. & Arino, O. (1999). A predator–prey model with disease in the prey. Nonlinear Analysis: Theory, Methods & Applications, 36(6), 747–766.", "doi": "10.1016/s0362-546x(98)00126-6", "bib": "@article{chattopadhyay1999,\n  title={A predator--prey model with disease in the prey},\n  volume={36}, DOI={10.1016/s0362-546x(98)00126-6},\n  number={6},\n  journal={Nonlinear Analysis: Theory, Methods \\& Applications},\n  publisher={Elsevier BV},\n  author={Chattopadhyay, J. and Arino, O.},\n  year={1999},\n  pages={747--766} }"}, "venturino2002": {"short": "Venturino (2002)", "cite": "Venturino, E. (2002). Epidemics in predator–prey models: disease in the predators. Mathematical Medicine and Biology, 19(3), 185–205.", "doi": "10.1093/imammb/19.3.185", "bib": "@article{venturino2002,\n  title={Epidemics in predator--prey models: disease in the predators},\n  volume={19}, DOI={10.1093/imammb/19.3.185},\n  number={3},\n  journal={Mathematical Medicine and Biology},\n  publisher={Oxford University Press (OUP)},\n  author={Venturino, E.},\n  year={2002},\n  pages={185--205} }"}, "abrams2000": {"short": "Abrams (2000)", "cite": "Abrams, P. A. (2000). The Evolution of Predator–Prey Interactions: Theory and Evidence. Annual Review of Ecology and Systematics, 31(1), 79–105.", "doi": "10.1146/annurev.ecolsys.31.1.79", "bib": "@article{abrams2000,\n  title={The Evolution of Predator--Prey Interactions: Theory and Evidence},\n  volume={31}, DOI={10.1146/annurev.ecolsys.31.1.79},\n  number={1},\n  journal={Annual Review of Ecology and Systematics},\n  publisher={Annual Reviews},\n  author={Abrams, Peter A.},\n  year={2000},\n  pages={79--105} }"}, "yoshida2003": {"short": "Yoshida et al. (2003)", "cite": "Yoshida, T., Jones, L. E., Ellner, S. P., Fussmann, G. F., & Hairston, N. G. (2003). Rapid evolution drives ecological dynamics in a predator–prey system. Nature, 424(6946), 303–306.", "doi": "10.1038/nature01767", "bib": "@article{yoshida2003,\n  title={Rapid evolution drives ecological dynamics in a predator--prey system},\n  volume={424}, DOI={10.1038/nature01767},\n  number={6946},\n  journal={Nature},\n  publisher={Springer Science and Business Media LLC},\n  author={Yoshida, Takehito and Jones, Laura E. and Ellner, Stephen P. and Fussmann, Gregor F. and Hairston, Nelson G.},\n  year={2003},\n  pages={303--306} }"}, "hastings1991": {"short": "Hastings & Powell (1991)", "cite": "Hastings, A. & Powell, T. (1991). Chaos in a Three-Species Food Chain. Ecology, 72(3), 896–903.", "doi": "10.2307/1940591", "bib": "@article{hastings1991,\n  title={Chaos in a Three-Species Food Chain},\n  volume={72}, DOI={10.2307/1940591},\n  number={3},\n  journal={Ecology},\n  publisher={Wiley},\n  author={Hastings, Alan and Powell, Thomas},\n  year={1991},\n  pages={896--903} }"}, "hsu1978": {"short": "Hsu et al. (1978)", "cite": "Hsu, S. B., Hubbell, S. P., & Waltman, P. (1978). Competing Predators. SIAM Journal on Applied Mathematics, 35(4), 617–625.", "doi": "10.1137/0135051", "bib": "@article{hsu1978,\n  title={Competing Predators},\n  volume={35}, DOI={10.1137/0135051},\n  number={4},\n  journal={SIAM Journal on Applied Mathematics},\n  publisher={Society for Industrial \\& Applied Mathematics (SIAM)},\n  author={Hsu, S. B. and Hubbell, S. P. and Waltman, Paul},\n  year={1978},\n  pages={617--625} }"}, "armstrong1980": {"short": "Armstrong & McGehee (1980)", "cite": "Armstrong, R. A. & McGehee, R. (1980). Competitive Exclusion. The American Naturalist, 115(2), 151–170.", "doi": "10.1086/283553", "bib": "@article{armstrong1980,\n  title={Competitive Exclusion},\n  volume={115}, DOI={10.1086/283553},\n  number={2},\n  journal={The American Naturalist},\n  publisher={University of Chicago Press},\n  author={Armstrong, Robert A. and McGehee, Richard},\n  year={1980},\n  pages={151--170} }"}, "murdoch1969": {"short": "Murdoch (1969)", "cite": "Murdoch, W. W. (1969). Switching in General Predators: Experiments on Predator Specificity and Stability of Prey Populations. Ecological Monographs, 39(4), 335–354.", "doi": "10.2307/1942352", "bib": "@article{murdoch1969,\n  title={Switching in General Predators: Experiments on Predator Specificity and Stability of Prey Populations},\n  volume={39}, DOI={10.2307/1942352},\n  number={4},\n  journal={Ecological Monographs},\n  publisher={Wiley},\n  author={Murdoch, William W.},\n  year={1969},\n  pages={335--354} }"}, "tansky1978": {"short": "Tansky (1978)", "cite": "Tansky, M. (1978). Switching effect in prey–predator system. Journal of Theoretical Biology, 70(3), 263–271.", "doi": "10.1016/0022-5193(78)90376-4", "bib": "@article{tansky1978,\n  title={Switching effect in prey--predator system},\n  volume={70}, DOI={10.1016/0022-5193(78)90376-4},\n  number={3},\n  journal={Journal of Theoretical Biology},\n  publisher={Elsevier BV},\n  author={Tansky, Mumay},\n  year={1978},\n  pages={263--271} }"}, "holt1977": {"short": "Holt (1977)", "cite": "Holt, R. D. (1977). Predation, apparent competition, and the structure of prey communities. Theoretical Population Biology, 12(2), 197–229.", "doi": "10.1016/0040-5809(77)90042-9", "bib": "@article{holt1977,\n  title={Predation, apparent competition, and the structure of prey communities},\n  volume={12}, DOI={10.1016/0040-5809(77)90042-9},\n  number={2},\n  journal={Theoretical Population Biology},\n  publisher={Elsevier BV},\n  author={Holt, Robert D.},\n  year={1977},\n  pages={197--229} }"}, "holt1997": {"short": "Holt & Polis (1997)", "cite": "Holt, R. D. & Polis, G. A. (1997). A Theoretical Framework for Intraguild Predation. The American Naturalist, 149(4), 745–764.", "doi": "10.1086/286018", "bib": "@article{holt1997,\n  title={A Theoretical Framework for Intraguild Predation},\n  volume={149}, DOI={10.1086/286018},\n  number={4},\n  journal={The American Naturalist},\n  publisher={University of Chicago Press},\n  author={Holt, Robert D. and Polis, Gary A.},\n  year={1997},\n  pages={745--764} }"}, "vos2004": {"short": "Vos et al. (2004)", "cite": "Vos, M., Kooi, B. W., DeAngelis, D. L., & Mooij, W. M. (2004). Inducible defences and the paradox of enrichment. Oikos, 105(3), 471–480.", "doi": "10.1111/j.0030-1299.2004.12930.x", "bib": "@article{vos2004,\n  title={Inducible defences and the paradox of enrichment},\n  volume={105}, DOI={10.1111/j.0030-1299.2004.12930.x},\n  number={3},\n  journal={Oikos},\n  publisher={Wiley},\n  author={Vos, Matthijs and Kooi, Bob W. and DeAngelis, Donald L. and Mooij, Wolf M.},\n  year={2004},\n  pages={471--480} }"}, "krivan1996": {"short": "Křivan (1996)", "cite": "Křivan, V. (1996). Optimal Foraging and Predator–Prey Dynamics. Theoretical Population Biology, 49(3), 265–290.", "doi": "10.1006/tpbi.1996.0014", "bib": "@article{krivan1996,\n  title={Optimal Foraging and Predator--Prey Dynamics},\n  volume={49}, DOI={10.1006/tpbi.1996.0014},\n  number={3},\n  journal={Theoretical Population Biology},\n  publisher={Elsevier BV},\n  author={K{\\v{r}}ivan, Vlastimil},\n  year={1996},\n  pages={265--290} }"}, "levin1974": {"short": "Levin (1974)", "cite": "Levin, S. A. (1974). Dispersion and Population Interactions. The American Naturalist, 108(960), 207–228.", "doi": "10.1086/282900", "bib": "@article{levin1974,\n  title={Dispersion and Population Interactions},\n  volume={108}, DOI={10.1086/282900},\n  number={960},\n  journal={The American Naturalist},\n  publisher={University of Chicago Press},\n  author={Levin, Simon A.},\n  year={1974},\n  pages={207--228} }"}, "freedman1989": {"short": "Freedman & Takeuchi (1989)", "cite": "Freedman, H. I. & Takeuchi, Y. (1989). Global stability and predator dynamics in a model of prey dispersal in a patchy environment. Nonlinear Analysis: Theory, Methods & Applications, 13(8), 993–1002.", "doi": "10.1016/0362-546x(89)90026-6", "bib": "@article{freedman1989,\n  title={Global stability and predator dynamics in a model of prey dispersal in a patchy environment},\n  volume={13}, DOI={10.1016/0362-546x(89)90026-6},\n  number={8},\n  journal={Nonlinear Analysis: Theory, Methods \\& Applications},\n  publisher={Elsevier BV},\n  author={Freedman, H. I. and Takeuchi, Y.},\n  year={1989},\n  pages={993--1002} }"}, "levins1969": {"short": "Levins (1969)", "cite": "Levins, R. (1969). Some Demographic and Genetic Consequences of Environmental Heterogeneity for Biological Control. Bulletin of the Entomological Society of America, 15(3), 237–240.", "doi": "10.1093/besa/15.3.237", "bib": "@article{levins1969,\n  title={Some Demographic and Genetic Consequences of Environmental Heterogeneity for Biological Control},\n  volume={15}, DOI={10.1093/besa/15.3.237},\n  number={3},\n  journal={Bulletin of the Entomological Society of America},\n  publisher={Oxford University Press (OUP)},\n  author={Levins, R.},\n  year={1969},\n  pages={237--240} }"}, "dubey2003": {"short": "Dubey et al. (2003)", "cite": "Dubey, B., Chandra, P., & Sinha, P. (2003). A model for fishery resource with reserve area. Nonlinear Analysis: Real World Applications, 4(4), 625–637.", "doi": "10.1016/s1468-1218(02)00082-2", "bib": "@article{dubey2003,\n  title={A model for fishery resource with reserve area},\n  volume={4}, DOI={10.1016/s1468-1218(02)00082-2},\n  number={4},\n  journal={Nonlinear Analysis: Real World Applications},\n  publisher={Elsevier BV},\n  author={Dubey, B. and Chandra, Peeyush and Sinha, Prawal},\n  year={2003},\n  pages={625--637} }"}, "smith1995": {"short": "Smith & Waltman (1995)", "cite": "Smith, H. L. & Waltman, P. (1995). The Theory of the Chemostat: Dynamics of Microbial Competition. Cambridge University Press.", "doi": "10.1017/cbo9780511530043", "bib": "@book{smith1995,\n  title={The Theory of the Chemostat: Dynamics of Microbial Competition}, ISBN={9780511530043}, DOI={10.1017/cbo9780511530043},\n  publisher={Cambridge University Press},\n  author={Smith, Hal L. and Waltman, Paul},\n  year={1995} }"}, "ahmed2007": {"short": "Ahmed et al. (2007)", "cite": "Ahmed, E., El-Sayed, A. M. A., & El-Saka, H. A. A. (2007). Equilibrium points, stability and numerical solutions of fractional-order predator–prey and rabies models. Journal of Mathematical Analysis and Applications, 325(1), 542–553.", "doi": "10.1016/j.jmaa.2006.01.087", "bib": "@article{ahmed2007,\n  title={Equilibrium points, stability and numerical solutions of fractional-order predator--prey and rabies models},\n  volume={325}, DOI={10.1016/j.jmaa.2006.01.087},\n  number={1},\n  journal={Journal of Mathematical Analysis and Applications},\n  publisher={Elsevier BV},\n  author={Ahmed, E. and El-Sayed, A. M. A. and El-Saka, H. A. A.},\n  year={2007},\n  pages={542--553} }"}, "nicholson1935": {"short": "Nicholson & Bailey (1935)", "cite": "Nicholson, A. J. & Bailey, V. A. (1935). The Balance of Animal Populations.–-Part I.. Proceedings of the Zoological Society of London, 105(3), 551–598.", "doi": "10.1111/j.1096-3642.1935.tb01680.x", "bib": "@article{nicholson1935,\n  title={The Balance of Animal Populations.---Part {I}.},\n  volume={105}, DOI={10.1111/j.1096-3642.1935.tb01680.x},\n  number={3},\n  journal={Proceedings of the Zoological Society of London},\n  publisher={Wiley},\n  author={Nicholson, A. J. and Bailey, V. A.},\n  year={1935},\n  pages={551--598} }"}, "liu2007": {"short": "Liu & Xiao (2007)", "cite": "Liu, X. & Xiao, D. (2007). Complex dynamic behaviors of a discrete-time predator–prey system. Chaos, Solitons & Fractals, 32(1), 80–94.", "doi": "10.1016/j.chaos.2005.10.081", "bib": "@article{liu2007,\n  title={Complex dynamic behaviors of a discrete-time predator--prey system},\n  volume={32}, DOI={10.1016/j.chaos.2005.10.081},\n  number={1},\n  journal={Chaos, Solitons \\& Fractals},\n  publisher={Elsevier BV},\n  author={Liu, Xiaoli and Xiao, Dongmei},\n  year={2007},\n  pages={80--94} }"}, "rinaldi1992": {"short": "Rinaldi & Muratori (1992)", "cite": "Rinaldi, S. & Muratori, S. (1992). Slow-fast limit cycles in predator–prey models. Ecological Modelling, 61(3-4), 287–308.", "doi": "10.1016/0304-3800(92)90023-8", "bib": "@article{rinaldi1992,\n  title={Slow-fast limit cycles in predator--prey models},\n  volume={61}, DOI={10.1016/0304-3800(92)90023-8},\n  number={3-4},\n  journal={Ecological Modelling},\n  publisher={Elsevier BV},\n  author={Rinaldi, S. and Muratori, S.},\n  year={1992},\n  pages={287--308} }"}, "pal2013": {"short": "Pal et al. (2013)", "cite": "Pal, D., Mahaptra, G. S., & Samanta, G. P. (2013). Optimal harvesting of prey–predator system with interval biological parameters: A bioeconomic model. Mathematical Biosciences, 241(2), 181–187.", "doi": "10.1016/j.mbs.2012.11.007", "bib": "@article{pal2013,\n  title={Optimal harvesting of prey--predator system with interval biological parameters: A bioeconomic model},\n  volume={241}, DOI={10.1016/j.mbs.2012.11.007},\n  number={2},\n  journal={Mathematical Biosciences},\n  publisher={Elsevier BV},\n  author={Pal, D. and Mahaptra, G. S. and Samanta, G. P.},\n  year={2013},\n  pages={181--187} }"}, "volterra1926": {"short": "Volterra (1926)", "cite": "Volterra, V. (1926). Fluctuations in the Abundance of a Species considered Mathematically. Nature, 118(2972), 558–560.", "doi": "10.1038/118558a0", "bib": "@article{volterra1926,\n  title={Fluctuations in the Abundance of a Species considered Mathematically},\n  volume={118}, DOI={10.1038/118558a0},\n  number={2972},\n  journal={Nature},\n  publisher={Springer Science and Business Media LLC},\n  author={Volterra, Vito},\n  year={1926},\n  pages={558--560} }"}, "tanner1975": {"short": "Tanner (1975)", "cite": "Tanner, J. T. (1975). The Stability and the Intrinsic Growth Rates of Prey and Predator Populations. Ecology, 56(4), 855–867.", "doi": "10.2307/1936296", "bib": "@article{tanner1975,\n  title={The Stability and the Intrinsic Growth Rates of Prey and Predator Populations},\n  volume={56}, DOI={10.2307/1936296},\n  number={4},\n  journal={Ecology},\n  publisher={Wiley},\n  author={Tanner, James T.},\n  year={1975},\n  pages={855--867} }"}, "verhulst1838": {"short": "Verhulst (1838)", "cite": "Verhulst, P. (1838). Notice sur la loi que la population suit dans son accroissement. Correspondance Mathématique et Physique, 10, 113–121.", "doi": "", "bib": "@article{verhulst1838,\n  author  = {Verhulst, Pierre-Fran{\\c{c}}ois},\n  title   = {Notice sur la loi que la population suit dans son accroissement},\n  journal = {Correspondance Math{\\'e}matique et Physique},\n  volume  = {10},\n  pages   = {113--121},\n  year    = {1838}\n}"}, "allee1931": {"short": "Allee (1931)", "cite": "Allee, W. C. (1931). Animal Aggregations: A Study in General Sociology. University of Chicago Press.", "doi": "10.5962/bhl.title.7313", "bib": "@book{allee1931,\n  author    = {Allee, Warder C.},\n  title     = {Animal Aggregations: A Study in General Sociology},\n  publisher = {University of Chicago Press},\n  year      = {1931},\n  doi       = {10.5962/bhl.title.7313}\n}"}, "ivlev1961": {"short": "Ivlev (1961)", "cite": "Ivlev, V. S. (1961). Experimental Ecology of the Feeding of Fishes. Yale University Press.", "doi": "", "bib": "@book{ivlev1961,\n  author    = {Ivlev, V. S.},\n  title     = {Experimental Ecology of the Feeding of Fishes},\n  publisher = {Yale University Press},\n  year      = {1961},\n  note      = {Translated from the Russian by D. Scott}\n}"}, "maynardsmith1974": {"short": "Maynard Smith (1974)", "cite": "Maynard Smith, J. (1974). Models in Ecology. Cambridge University Press.", "doi": "", "bib": "@book{maynardsmith1974,\n  author    = {Maynard Smith, John},\n  title     = {Models in Ecology},\n  publisher = {Cambridge University Press},\n  year      = {1974}\n}"}, "clark1976": {"short": "Clark (1976)", "cite": "Clark, C. W. (1976). Mathematical Bioeconomics: The Optimal Management of Renewable Resources. Wiley.", "doi": "", "bib": "@book{clark1976,\n  author    = {Clark, Colin W.},\n  title     = {Mathematical Bioeconomics: The Optimal Management of Renewable Resources},\n  publisher = {Wiley},\n  year      = {1976}\n}"}, "kuang1993": {"short": "Kuang (1993)", "cite": "Kuang, Y. (1993). Delay Differential Equations with Applications in Population Dynamics. Academic Press.", "doi": "", "bib": "@book{kuang1993,\n  author    = {Kuang, Yang},\n  title     = {Delay Differential Equations with Applications in Population Dynamics},\n  series    = {Mathematics in Science and Engineering},\n  volume    = {191},\n  publisher = {Academic Press},\n  year      = {1993}\n}"}, "bazykin1998": {"short": "Bazykin (1998)", "cite": "Bazykin, A. D. (1998). Nonlinear Dynamics of Interacting Populations. World Scientific.", "doi": "10.1142/2284", "bib": "@book{bazykin1998,\n  author    = {Bazykin, Alexander D.},\n  note      = {Edited by A. I. Khibnik and B. Krauskopf},\n  title     = {Nonlinear Dynamics of Interacting Populations},\n  series    = {World Scientific Series on Nonlinear Science, Series A},\n  publisher = {World Scientific},\n  year      = {1998},\n  doi       = {10.1142/2284}\n}"}, "mickens1994": {"short": "Mickens (1994)", "cite": "Mickens, R. E. (1994). Nonstandard Finite Difference Models of Differential Equations. World Scientific.", "doi": "10.1142/2081", "bib": "@book{mickens1994,\n  author    = {Mickens, Ronald E.},\n  title     = {Nonstandard Finite Difference Models of Differential Equations},\n  publisher = {World Scientific},\n  year      = {1994},\n  doi       = {10.1142/2081}\n}"}, "deangelis1992": {"short": "DeAngelis & Gross (1992)", "cite": "DeAngelis, D. L. & Gross, L. J. (1992). Individual-Based Models and Approaches in Ecology. Chapman & Hall.", "doi": "10.1007/978-1-4757-0869-1", "bib": "@book{deangelis1992,\n  editor    = {DeAngelis, Donald L. and Gross, Louis J.},\n  title     = {Individual-Based Models and Approaches in Ecology},\n  publisher = {Chapman \\& Hall},\n  year      = {1992},\n  doi       = {10.1007/978-1-4757-0869-1}\n}"}, "matignon1996": {"short": "Matignon (1996)", "cite": "Matignon, D. (1996). Stability results for fractional differential equations with applications to control processing. Computational Engineering in Systems Applications, 2, 963–968.", "doi": "", "bib": "@inproceedings{matignon1996,\n  author    = {Matignon, Denis},\n  title     = {Stability results for fractional differential equations with applications to control processing},\n  booktitle = {Computational Engineering in Systems Applications},\n  volume    = {2},\n  pages     = {963--968},\n  year      = {1996}\n}"}, "lotka1925": {"short": "Lotka (1925)", "cite": "Lotka, A. J. (1925). Elements of Physical Biology. Williams & Wilkins.", "doi": "", "bib": "@book{lotka1925,\n  author    = {Lotka, Alfred J.},\n  title     = {Elements of Physical Biology},\n  publisher = {Williams \\& Wilkins},\n  year      = {1925}\n}"}, "may1973": {"short": "May (1973)", "cite": "May, R. M. (1973). Stability and Complexity in Model Ecosystems. Princeton University Press.", "doi": "", "bib": "@book{may1973,\n  author    = {May, Robert M.},\n  title     = {Stability and Complexity in Model Ecosystems},\n  publisher = {Princeton University Press},\n  year      = {1973}\n}"}, "kohlmeier1995": {"short": "Kohlmeier & Ebenhöh (1995)", "cite": "Kohlmeier, C. & Ebenhöh, W. (1995). The stabilizing role of cannibalism in a predator–prey system. Bulletin of Mathematical Biology, 57(3), 401–411.", "doi": "10.1007/BF02460632", "bib": "@article{kohlmeier1995,\n  title={The stabilizing role of cannibalism in a predator--prey system},\n  volume={57}, DOI={10.1007/BF02460632},\n  number={3},\n  journal={Bulletin of Mathematical Biology},\n  publisher={Springer Science and Business Media LLC},\n  author={Kohlmeier, C. and Ebenh{\\\"o}h, W.},\n  year={1995},\n  pages={401--411} }"}, "xiao2001siam": {"short": "Xiao & Ruan (2001)", "cite": "Xiao, D. & Ruan, S. (2001). Global Analysis in a Predator–Prey System with Nonmonotonic Functional Response. SIAM Journal on Applied Mathematics, 61(4), 1445–1472.", "doi": "10.1137/s0036139999361896", "bib": "@article{xiao2001siam,\n  title={Global Analysis in a Predator--Prey System with Nonmonotonic Functional Response},\n  volume={61}, DOI={10.1137/s0036139999361896},\n  number={4},\n  journal={SIAM Journal on Applied Mathematics},\n  publisher={Society for Industrial \\& Applied Mathematics (SIAM)},\n  author={Xiao, Dongmei and Ruan, Shigui},\n  year={2001},\n  pages={1445--1472} }"}, "xiao2001rd": {"short": "Xiao & Ruan (2001)", "cite": "Xiao, D. & Ruan, S. (2001). Global dynamics of a ratio-dependent predator–prey system. Journal of Mathematical Biology, 43(3), 268–290.", "doi": "10.1007/s002850100097", "bib": "@article{xiao2001rd,\n  title={Global dynamics of a ratio-dependent predator--prey system},\n  volume={43}, DOI={10.1007/s002850100097},\n  number={3},\n  journal={Journal of Mathematical Biology},\n  publisher={Springer Science and Business Media LLC},\n  author={Xiao, Dongmei and Ruan, Shigui},\n  year={2001},\n  pages={268--290} }"}, "rosenzweig1971": {"short": "Rosenzweig (1971)", "cite": "Rosenzweig, M. L. (1971). Paradox of Enrichment: Destabilization of Exploitation Ecosystems in Ecological Time. Science, 171(3969), 385–387.", "doi": "10.1126/science.171.3969.385", "bib": "@article{rosenzweig1971,\n  title={Paradox of Enrichment: Destabilization of Exploitation Ecosystems in Ecological Time},\n  volume={171}, DOI={10.1126/science.171.3969.385},\n  number={3969},\n  journal={Science},\n  publisher={American Association for the Advancement of Science (AAAS)},\n  author={Rosenzweig, Michael L.},\n  year={1971},\n  pages={385--387} }"}, "cheng1981": {"short": "Cheng (1981)", "cite": "Cheng, K. (1981). Uniqueness of a Limit Cycle for a Predator–Prey System. SIAM Journal on Mathematical Analysis, 12(4), 541–548.", "doi": "10.1137/0512047", "bib": "@article{cheng1981,\n  title={Uniqueness of a Limit Cycle for a Predator--Prey System},\n  volume={12}, DOI={10.1137/0512047},\n  number={4},\n  journal={SIAM Journal on Mathematical Analysis},\n  publisher={Society for Industrial \\& Applied Mathematics (SIAM)},\n  author={Cheng, Kuo-Shung},\n  year={1981},\n  pages={541--548} }"}, "mcnair1986": {"short": "McNair (1986)", "cite": "McNair, J. N. (1986). The effects of refuges on predator–prey interactions: A reconsideration. Theoretical Population Biology, 29(1), 38–63.", "doi": "10.1016/0040-5809(86)90004-3", "bib": "@article{mcnair1986,\n  title={The effects of refuges on predator--prey interactions: A reconsideration},\n  volume={29}, DOI={10.1016/0040-5809(86)90004-3},\n  number={1},\n  journal={Theoretical Population Biology},\n  publisher={Elsevier BV},\n  author={McNair, James N.},\n  year={1986},\n  pages={38--63} }"}, "uiterwaal2022": {"short": "Uiterwaal et al. (2022)", "cite": "Uiterwaal, S. F., Lagerstrom, I. T., Lyon, S. R., & DeLong, J. P. (2022). FoRAGE database: A compilation of functional responses for consumers and parasitoids. Ecology, 103(7), e3706.", "doi": "10.1002/ecy.3706", "bib": "@article{uiterwaal2022,\n  title={{FoRAGE} database: A compilation of functional responses for consumers and parasitoids},\n  volume={103}, DOI={10.1002/ecy.3706},\n  number={7},\n  journal={Ecology},\n  publisher={Wiley},\n  author={Uiterwaal, Stella F. and Lagerstrom, Ian T. and Lyon, Shelby R. and DeLong, John P.},\n  year={2022},\n  pages={e3706} }"}};
+const R = String.raw;
+const VERSION = '1.0.0';
+
+/* ------------------------------------------------------------------ state */
+/* growth, allee and fear are per prey species (S.pg[i-1]); the top-level values below only seed presets.
+   S.diet[i-1][j-1]: predator j eats prey i.  S.pdiet[k-1][l-1]: predator l eats predator k (k = l: cannibalism). */
+const DEF = { n:1, m:1, diet:null, pdiet:null, pg:null, growth:'logistic', allee:'none', fear:false, seasonal:false, preyComp:false,
+  fr:'H2', refuge:'none', habitat:false, coop:false, addFood:false,
+  num:'conv', predAllee:false, gest:false, mat:false, dd:false, predComp:false,
+  harvX:'none', immX:false, harvY:'none', immY:false, antiPred:'none', toxic:false, frame:'ode', lang:'en' };
+const PRESETS = {
+  lv:  { growth:'exp', fr:'H1' },
+  rm:  { growth:'logistic', fr:'H2' },
+  ht:  { growth:'logistic', fr:'H2', num:'LG' },
+  fw:  { growth:'logistic', fr:'H4' },
+  ag:  { growth:'logistic', fr:'RD' },
+  bz:  { growth:'logistic', fr:'H2', dd:true },
+  wzz: { growth:'logistic', fr:'H2', fear:true },
+  tp:  { n:2, m:1, growth:'logistic', fr:'H2' },
+  cp:  { n:1, m:2, growth:'logistic', fr:'H2' },
+  mix: { n:2, m:1, fr:'H2', pg:[{ growth:'logistic', allee:'none', fear:false }, { growth:'logistic', allee:'strong', fear:false }] },
+  hp:  { n:1, m:2, growth:'logistic', fr:'H2', diet:[[true,false]], pdiet:[[false,true],[false,false]] },
+  igp: { n:1, m:2, growth:'logistic', fr:'H1', pdiet:[[false,true],[false,false]] },
+  can: { growth:'logistic', fr:'H2', pdiet:[[true]] },
+  mp:  { growth:'logistic', fr:'H1', antiPred:'eat' },
+};
+let S = null;
+const clone = o => JSON.parse(JSON.stringify(o));
+function fullDiet(){ S.diet = Array.from({length:S.n}, () => Array(S.m).fill(true)); }
+function resetPDiet(){ S.pdiet = Array.from({length:S.m}, () => Array(S.m).fill(false)); }
+function resizePG(){ const t = S.pg[0]; S.pg = Array.from({length:S.n}, (_, k) => S.pg[k] || { ...t }); }
+function applyPreset(k){
+  const lang = S ? S.lang : 'en', P = PRESETS[k] || {};
+  S = Object.assign(clone(DEF), clone(P)); S.lang = lang;
+  fullDiet(); resetPDiet();
+  if (P.diet) S.diet = clone(P.diet);
+  if (P.pdiet) S.pdiet = clone(P.pdiet);
+  S.pg = P.pg ? clone(P.pg) : Array.from({length:S.n}, () => ({ growth:S.growth, allee:S.allee, fear:!!S.fear }));
+  delete S.growth; delete S.allee; delete S.fear;
+}
+applyPreset('rm');
+
+/* ------------------------------------------------------------------ index helpers */
+const sp = i => S.n > 1 ? `_{${i}}` : '';
+const sq = j => S.m > 1 ? `_{${j}}` : '';
+const s2 = (i, j) => (S.n > 1 && S.m > 1) ? `_{${i}${j}}` : S.n > 1 ? `_{${i}}` : S.m > 1 ? `_{${j}}` : '';
+const s2c = (a, i) => S.n > 1 ? `_{${a},${i}}` : `_{${a}}`;      // c_{1,i}
+const s2cy = (a, j) => S.m > 1 ? `_{${a},${j}}` : `_{${a}}`;
+const X0 = i => `x${sp(i)}`, Y0 = j => `y${sq(j)}`;
+const dietOf = j => { const r = []; for (let i = 1; i <= S.n; i++) if (S.diet[i-1][j-1]) r.push(i); return r; };
+const predsOf = i => { const r = []; for (let j = 1; j <= S.m; j++) if (S.diet[i-1][j-1]) r.push(j); return r; };
+const complete = () => S.diet.every(row => row.every(Boolean));
+const hasD = () => ['H2','H3','BD','CM','RD','HV'].includes(S.fr);
+const isLG = () => S.num !== 'conv';
+/* predators as food: k is the eaten predator, l the eater */
+const s2y = (k, l) => S.m > 1 ? `_{${k}${l}}` : '';
+const pfoodOf = l => { const r = []; for (let k = 1; k <= S.m; k++) if (S.pdiet[k-1][l-1]) r.push(k); return r; };
+const eatersOf = k => { const r = []; for (let l = 1; l <= S.m; l++) if (S.pdiet[k-1][l-1]) r.push(l); return r; };
+const pLinks = () => { const r = []; for (let k = 1; k <= S.m; k++) for (let l = 1; l <= S.m; l++) if (S.pdiet[k-1][l-1]) r.push([k, l]); return r; };
+const hasFood = l => dietOf(l).length + pfoodOf(l).filter(k => k !== l).length > 0;
+const symOK = () => (S.n > 1 || S.m > 1) && complete() && !pLinks().length;   // indexed form only for complete prey diets without predator-predator links
+function linkTypes(){
+  const PL = pLinks(), share = (k, l) => dietOf(k).some(i => S.diet[i-1][l-1]);
+  const one = PL.filter(([k, l]) => k !== l && !S.pdiet[l-1][k-1]);
+  return { PL, can: PL.filter(([k, l]) => k === l), mut: PL.filter(([k, l]) => k < l && S.pdiet[l-1][k-1]),
+    igp: one.filter(([k, l]) => share(k, l)), chain: one.filter(([k, l]) => !share(k, l)) };
+}
+/* per-prey growth settings */
+const cfg = i => S.pg[(typeof i === 'number' ? i : 1) - 1];
+const sameGrowth = () => S.pg.every(c => c.growth === S.pg[0].growth && c.allee === S.pg[0].allee && c.fear === S.pg[0].fear);
+/* powers: insert the exponent before a delay argument, y_1(t-τ) -> y_1^{2}(t-τ) */
+const pw = (v, p) => (p === 1 || p === '1') ? v : (v.includes('(t-') ? v.replace('(t-', `^{${p}}(t-`) : `${v}^{${p}}`);
+const addExp = (p, cp) => cp === '1' ? p + 1 : `${p + 1}${cp.slice(1)}`;
+
+/* ------------------------------------------------------------------ term builders (mode: 'num' expanded, 'sym' indexed) */
+const rTex = i => S.seasonal ? `r${sp(i)}\\left(1+\\varepsilon${sp(i)}\\sin\\omega t\\right)` : `r${sp(i)}`;
+function predSum(i, fn, mode){ return mode === 'sym' ? (S.m > 1 ? `\\sum_{j=1}^{n_y}${fn('j')}` : fn(1)) : predsOf(i).map(fn).join('+'); }
+function preySum(j, fn, mode, tok="i'"){ return mode === 'sym' ? (S.n > 1 ? `\\sum_{${tok}=1}^{n_x}${fn(tok)}` : fn(1)) : dietOf(j).map(fn).join('+'); }
+function foodCount(j, mode){ return mode === 'sym' ? S.n : dietOf(j).length + pfoodOf(j).length; }
+
+function xt(i, X){ const v = X(i);
+  return S.refuge === 'prop' ? `(1-\\phi${sp(i)})${v}` : S.refuge === 'num' ? `(${v}-\\xi${sp(i)})_{+}` : v; }
+function xtPow(i, X, p){ const v = X(i);
+  return S.refuge === 'prop' ? `\\left[(1-\\phi${sp(i)})${v}\\right]^{${p}}` : S.refuge === 'num' ? `(${v}-\\xi${sp(i)})_{+}^{${p}}` : `${v}^{${p}}`; }
+function ah(i, j, Y){
+  let b = `a${s2(i,j)}`;
+  if (S.coop) b = `\\left(a${s2(i,j)}+w${sq(j)}${Y(j)}\\right)`;
+  if (S.habitat) b = S.coop ? `(1-\\kappa)${b}` : `${b}(1-\\kappa)`;
+  return b;
+}
+function numer(i, j, X, Y){
+  switch (S.fr) {
+    case 'H3': return ah(i,j,Y) + xtPow(i, X, 2);
+    case 'Herd': return ah(i,j,Y) + xtPow(i, X, `p${sp(i)}`);
+    case 'Ivlev': return `\\rho${s2(i,j)}\\left(1-\\exp\\left(-\\lambda${s2(i,j)} ${xt(i,X)}\\right)\\right)`;
+    default: return ah(i,j,Y) + xt(i, X);
+  }
+}
+function hterm(k, j, X, Y){ return ah(k,j,Y) + `h${s2(k,j)}` + (S.fr === 'H3' ? xtPow(k, X, 2) : xt(k, X)); }
+/* predator k eaten by predator l: prey-side modifiers (refuge, habitat, cooperation, herd, group defence) do not apply */
+const powY = () => S.fr === 'H3' ? 2 : 1;
+const consPow = l => S.fr === 'MI' ? `1-\\nu${sq(l)}` : '1';
+function numerY(k, l, Yf){
+  if (S.fr === 'Ivlev') return `\\rho^{y}${s2y(k,l)}\\left(1-\\exp\\left(-\\lambda^{y}${s2y(k,l)} ${Yf(k)}\\right)\\right)`;
+  return `a^{y}${s2y(k,l)}${pw(Yf(k), powY())}`;
+}
+function eatY(k, l, Yf, Yc, coef = ''){   // numerator times the eater's density; cannibalism merges the powers
+  const cp = consPow(l);
+  if (k === l && S.fr !== 'Ivlev' && Yf(k) === Yc(l)) return `${coef}a^{y}${s2y(k,l)}${pw(Yc(l), addExp(powY(), cp))}`;
+  return `${coef}${numerY(k, l, Yf)}${pw(Yc(l), cp)}`;
+}
+const hY = (k, l, Yf) => `a^{y}${s2y(k,l)}h^{y}${s2y(k,l)}${pw(Yf(k), powY())}`;
+function Dj(j, X, Y, mode){
+  const parts = [preySum(j, k => hterm(k, j, X, Y), mode)];
+  if (mode !== 'sym') pfoodOf(j).forEach(k => parts.push(hY(k, j, Y)));
+  const hs = parts.filter(Boolean).join('+');
+  const af = S.addFood ? `+a^{F}${sq(j)}h^{F}${sq(j)}\\Lambda${sq(j)}` : '';
+  switch (S.fr) {
+    case 'BD': return `1+${hs}${af}+c${sq(j)}${Y(j)}`;
+    case 'CM': return `\\left(1+${hs}${af}\\right)\\left(1+c${sq(j)}${Y(j)}\\right)`;
+    case 'RD': return `${Y(j)}+${hs}`;
+    case 'HV': return `${Y(j)}^{\\gamma${sq(j)}}+${hs}`;
+    default: return `1+${hs}${af}`;
+  }
+}
+const pairDen = (i, j, X, Y) => `1+${ah(i,j,Y)}h${s2(i,j)}${xt(i,X)}+\\frac{${xtPow(i,X,2)}}{G${s2(i,j)}}`;
+function useDsym(j, mode){ return hasD() && (foodCount(j, mode) > 1 || S.addFood); }
+const Dname = j => `D${sq(j)}`;
+
+/* per-predator consumption of prey i (multiplied by predator density), current state */
+function lossTerm(i, j, mode){
+  const n = numer(i, j, X0, Y0), y = Y0(j);
+  switch (S.fr) {
+    case 'H1': case 'Herd': case 'Ivlev': return `${n}${y}`;
+    case 'MI': return `${n}${y}^{1-\\nu${sq(j)}}`;
+    case 'H4': return `\\frac{${n}${y}}{${pairDen(i,j,X0,Y0)}}`;
+    default: return `\\frac{${n}${y}}{${useDsym(j, mode) ? Dname(j) : Dj(j, X0, Y0, mode)}}`;
+  }
+}
+/* loss of predator k to predator l (expanded form only) */
+function lossTermY(k, l){
+  const n = eatY(k, l, Y0, Y0);
+  switch (S.fr) {
+    case 'H1': case 'Herd': case 'Ivlev': case 'MI': return n;
+    case 'H4': return `\\frac{${n}}{1+${hY(k, l, Y0)}}`;
+    default: return `\\frac{${n}}{${useDsym(l, 'num') ? Dname(l) : Dj(l, X0, Y0, 'num')}}`;
+  }
+}
+
+/* predator gain from all its food (prey and other predators); possibly delayed */
+function gainTerm(j, mode){
+  const delayed = S.gest;
+  const X = delayed ? (i => `x${sp(i)}(t-\\tau${sq(j)})`) : X0;
+  const Y = delayed ? (k => `y${sq(k)}(t-\\tau${sq(j)})`) : Y0;
+  const y = Y(j);
+  let g, isSum = false;
+  const item = i => `e${s2(i,j)}${numer(i, j, X, Y)}`;
+  const itemY = k => `e^{y}${s2y(k,j)}${numerY(k, j, Y)}`;
+  const count = foodCount(j, mode);
+  if (mode === 'sym' && S.n > 1) {
+    const core = i => {
+      switch (S.fr) {
+        case 'H1': case 'Herd': case 'Ivlev': return `${item(i)}${y}`;
+        case 'MI': return `${item(i)}${y}^{1-\\nu${sq(j)}}`;
+        case 'H4': return `\\frac{${item(i)}${y}}{${pairDen(i,j,X,Y)}}`;
+        default: return `\\frac{${item(i)}${y}}{${Dname(j)}${delayed ? `(t-\\tau${sq(j)})` : ''}}`;
+      }
+    };
+    g = `\\sum_{i=1}^{n_x}${core('i')}`; isSum = true;
+    if (S.addFood) g += `+\\frac{e^{F}${sq(j)}a^{F}${sq(j)}\\Lambda${sq(j)} ${y}}{${Dname(j)}${delayed ? `(t-\\tau${sq(j)})` : ''}}`;
+  } else {
+    const list = [preySum(j, item, mode === 'sym' ? 'sym' : 'num', 'i'), ...(mode === 'sym' ? [] : pfoodOf(j).map(itemY))].filter(Boolean).join('+');
+    const extra = S.addFood ? `+e^{F}${sq(j)}a^{F}${sq(j)}\\Lambda${sq(j)}` : '';
+    const multi = count > 1 || S.addFood;
+    const top = multi ? `\\left(${list}${extra}\\right)${y}` : `${list}${y}`;
+    switch (S.fr) {
+      case 'H1': case 'Herd': case 'Ivlev': g = top; isSum = false; break;
+      case 'MI': g = multi ? `\\left(${list}\\right)${y}^{1-\\nu${sq(j)}}` : `${list}${y}^{1-\\nu${sq(j)}}`; break;
+      case 'H4': {
+        const parts = (mode === 'sym' ? [1] : dietOf(j)).map(i => `\\frac{${item(i)}${y}}{${pairDen(i,j,X,Y)}}`);
+        if (mode !== 'sym') pfoodOf(j).forEach(k => parts.push(`\\frac{${eatY(k, j, Y, Y, `e^{y}${s2y(k,j)}`)}}{1+${hY(k, j, Y)}}`));
+        g = parts.join('+'); isSum = parts.length > 1; break; }
+      default: {
+        const den = useDsym(j, mode) ? `${Dname(j)}${delayed ? `(t-\\tau${sq(j)})` : ''}` : Dj(j, X, Y, mode);
+        g = multi ? `\\frac{${y}}{${den}}\\left(${list}${extra}\\right)` : `\\frac{${top}}{${den}}`;   // several foods: y/D times their sum
+      }
+    }
+  }
+  if (S.predAllee) g = `\\frac{${y}}{${y}+\\psi${sq(j)}}` + (isSum ? `\\left(${g}\\right)` : g);
+  else if (S.mat && isSum) g = `\\left(${g}\\right)`;
+  if (S.mat) g = `\\exp\\left(-\\delta^{J}${sq(j)}\\tau${sq(j)}\\right)` + g;
+  return g;
+}
+
+/* growth of prey i with its own settings; in the indexed form, different growth laws are written G_i and defined below */
+function growthTerms(i, mode){
+  if (mode === 'sym' && !sameGrowth()) return [['+', `\\mathcal{G}${sp(i)}`]];
+  const c = cfg(i), x = X0(i), r = rTex(i), K = `K${sp(i)}`, T = [];
+  if (c.fear) {
+    const ks = predSum(i, j => `k${s2(i,j)}${Y0(j)}`, mode);
+    T.push(['+', ks ? `\\frac{${r}${x}}{1+${ks}}` : `${r}${x}`], ['-', `d${sp(i)}${x}`]);
+    if (c.growth === 'logistic') T.push(['-', `c^{x}${sp(i)}${x}^{2}`]);
+    return T;
+  }
+  switch (c.growth) {
+    case 'exp': T.push(['+', `${r}${x}`]); break;
+    case 'gompertz': T.push(['+', `${r}${x}\\ln\\frac{${K}}{${x}}`]); break;
+    case 'theta': T.push(['+', `${r}${x}\\left[1-\\left(\\frac{${x}}{${K}}\\right)^{\\theta${sp(i)}}\\right]`]); break;
+    case 'delayed': T.push(['+', `${r}${x}\\left(1-\\frac{x${sp(i)}(t-\\tau^{x}${sp(i)})}{${K}}\\right)`]); break;
+    default:
+      if (c.allee === 'strong' || c.allee === 'weak') T.push(['+', `${r}${x}\\left(1-\\frac{${x}}{${K}}\\right)\\frac{${x}-A${sp(i)}}{${K}}`]);
+      else T.push(['+', `${r}${x}\\left(1-\\frac{${x}}{${K}}\\right)`]);
+      if (c.allee === 'additive') T.push(['-', `\\frac{\\mu${sp(i)} ${x}}{${x}+b${sp(i)}}`]);
+  }
+  return T;
+}
+
+function harvest(kind, sup, v, idx2, idx1){
+  if (kind === 'effort') return ['-', `q^{${sup}}${idx1}E^{${sup}}${idx1}${v}`];
+  if (kind === 'yield') return ['-', `H^{${sup}}${idx1}`];
+  if (kind === 'mm') return ['-', `\\frac{q^{${sup}}${idx1}E^{${sup}}${idx1}${v}}{\\ell^{${sup}}${idx2(1)}E^{${sup}}${idx1}+\\ell^{${sup}}${idx2(2)}${v}}`];
+  return null;
+}
+
+function preyRHS(i, mode){
+  const T = growthTerms(i, mode), x = X0(i);
+  if (S.preyComp && S.n > 1) {
+    if (mode === 'sym') T.push(['-', `${x}\\sum_{i'\\neq i}\\alpha_{ii'}x_{i'}`]);
+    else for (let k = 1; k <= S.n; k++) if (k !== i) T.push(['-', `\\alpha_{${i}${k}}${x}x_{${k}}`]);
+  }
+  if (mode === 'sym') { if (S.m > 1) T.push(['-', `\\sum_{j=1}^{n_y}${lossTerm(i,'j',mode)}`]); else T.push(['-', lossTerm(i, 1, mode)]); }
+  else predsOf(i).forEach(j => T.push(['-', lossTerm(i, j, mode)]));
+  if (S.antiPred === 'eat') {   // the prey also eats its predators (mutual predation)
+    if (mode === 'sym') T.push(['+', S.m > 1 ? `${x}\\sum_{j=1}^{n_y}e^{x}${s2(i,'j')}\\zeta${s2(i,'j')} y_{j}` : `e^{x}${s2(i,1)}\\zeta${s2(i,1)} ${x}${Y0(1)}`]);
+    else predsOf(i).forEach(j => T.push(['+', `e^{x}${s2(i,j)}\\zeta${s2(i,j)} ${x}${Y0(j)}`]));
+  }
+  const h = harvest(S.harvX, 'x', x, a => s2c(a, i), sp(i)); if (h) T.push(h);
+  if (S.immX) T.push(['+', `I^{x}${sp(i)}`]);
+  return T;
+}
+
+function predRHS(j, mode){
+  const T = [], y = Y0(j);
+  if (isLG()) {
+    const capP = [preySum(j, i => `\\eta${s2(i,j)} ${X0(i)}`, mode, 'i')];
+    if (mode !== 'sym') pfoodOf(j).forEach(k => capP.push(`\\eta^{y}${s2y(k,j)} ${Y0(k)}`));
+    const cap = capP.filter(Boolean).join('+') + (S.num === 'MLG' ? `+C${sq(j)}` : '');
+    T.push(['+', `s${sq(j)}${y}\\left(1-\\frac{${y}}{${cap}}\\right)`]);
+  } else {
+    T.push(['+', gainTerm(j, mode)], ['-', `m${sq(j)}${y}`]);
+    if (S.dd) T.push(['-', `\\delta${sq(j)} ${y}^{2}`]);
+    if (S.predComp && S.m > 1) {
+      if (mode === 'sym') T.push(['-', `${y}\\sum_{j'\\neq j}\\beta_{jj'}y_{j'}`]);
+      else for (let l = 1; l <= S.m; l++) if (l !== j) T.push(['-', `\\beta_{${j}${l}}${y}y_{${l}}`]);
+    }
+  }
+  if (mode !== 'sym') eatersOf(j).forEach(l => T.push(['-', lossTermY(j, l)]));   // eaten by other predators or by itself
+  const h = harvest(S.harvY, 'y', y, a => s2cy(a, j), sq(j)); if (h) T.push(h);
+  if (S.immY) T.push(['+', `I^{y}${sq(j)}`]);
+  if (S.antiPred !== 'none') {
+    if (mode === 'sym' && S.n > 1) T.push(['-', `${y}\\sum_{i=1}^{n_x}\\zeta${s2('i',j)} x_{i}`]);
+    else (mode === 'sym' ? [1] : dietOf(j)).forEach(i => T.push(['-', `\\zeta${s2(i,j)} ${X0(i)}${y}`]));
+  }
+  if (S.toxic) {
+    if (mode === 'sym' && S.n > 1) T.push(['-', `\\sum_{i=1}^{n_x}\\frac{\\vartheta${s2('i',j)} x_{i}${y}}{g_{i}+x_{i}}`]);
+    else (mode === 'sym' ? [1] : dietOf(j)).forEach(i => T.push(['-', `\\frac{\\vartheta${s2(i,j)} ${X0(i)}${y}}{g${sp(i)}+${X0(i)}}`]));
+  }
+  return T;
+}
+
+const joinT = T => T.map(([s, t], k) => (k === 0 ? (s === '-' ? '-' : '') : (s === '-' ? '-' : '+')) + t).join('');
+/* [left side, right side, {terms, text before and after them}]; the third part lets the LaTeX export break long lines */
+function frameLine(v, T, sup, idx){
+  const rhs = joinT(T);
+  if (S.frame === 'pde') { const pre = `D^{${sup}}${idx}\\Delta ${v}+`; return [`\\frac{\\partial ${v}}{\\partial t}`, pre + rhs, { T, pre, post: '' }]; }
+  if (S.frame === 'sde') { const post = `\\Big]dt+\\sigma^{${sup}}${idx}${v}\\,dW^{${sup}}${idx}`; return [`d${v}`, `\\Big[${rhs}${post}`, { T, pre: '\\Big[', post }]; }
+  return [`\\frac{d${v}}{dt}`, rhs, { T, pre: '', post: '' }];
+}
+function system(mode){
+  const L = [];
+  if (mode === 'sym') {
+    if (S.n > 0) L.push(frameLine(X0('i'), preyRHS('i', mode), 'x', sp('i')));
+    L.push(frameLine(Y0('j'), predRHS('j', mode), 'y', sq('j')));
+  } else {
+    for (let i = 1; i <= S.n; i++) L.push(frameLine(X0(i), preyRHS(i, mode), 'x', sp(i)));
+    for (let j = 1; j <= S.m; j++) L.push(frameLine(Y0(j), predRHS(j, mode), 'y', sq(j)));
+  }
+  return L;
+}
+function whereLines(mode){
+  const W = [];
+  if (mode === 'sym' && !sameGrowth()) for (let i = 1; i <= S.n; i++) W.push(`\\mathcal{G}_{${i}}=${joinT(growthTerms(i, 'num'))}`);
+  if (hasD()) {
+    if (mode === 'sym') { if (useDsym('j', 'sym')) W.push(`${Dname('j')}=${Dj('j', X0, Y0, 'sym')}`); }
+    else for (let j = 1; j <= S.m; j++) if (useDsym(j, 'num')) W.push(`${Dname(j)}=${Dj(j, X0, Y0, 'num')}`);
+  }
+  if (S.refuge === 'num') W.push(`(u)_{+}=\\max\\{u,0\\}`);
+  return W;
+}
+const aligned = L => `\\begin{aligned}${L.map(([l, r]) => `${l}&=${r}`).join(',\\\\[4pt]')}\\end{aligned}`;
+
+/* ------------------------------------------------------------------ parameter catalogue */
+const setTxt = set => set.length === 1 ? `i=${set[0]}` : `i\\in\\{${set.join(',')}\\}`;
+function idxText(kind, lang, only){
+  const ar = lang === 'ar', o = only ? setTxt(only) : null;
+  if (kind === 'i') return o ? `\\(${o}\\)` : S.n > 1 ? R`\(i=1,\dots,n_x\)` : '';
+  if (kind === 'j') return S.m > 1 ? R`\(j=1,\dots,n_y\)` : '';
+  if (kind === 'ij') {
+    if (S.n > 1 && S.m > 1) return o ? (ar ? `روابط التغذية \\((i,j)\\) مع \\(${o}\\)` : `feeding links \\((i,j)\\) with \\(${o}\\)`) : (ar ? R`لكل رابط تغذية \((i,j)\)` : R`each feeding link \((i,j)\)`);
+    if (o) return `\\(${o}\\)`;
+    // one prey or one predator: list the species that actually take part in a feeding link
+    const part = (L, v, all) => L.length === all ? (v === 'i' ? R`\(i=1,\dots,n_x\)` : R`\(j=1,\dots,n_y\)`) : L.length === 1 ? `\\(${v}=${L[0]}\\)` : `\\(${v}\\in\\{${L.join(',')}\\}\\)`;
+    return S.n > 1 ? part(dietOf(1), 'i', S.n) : S.m > 1 ? part(predsOf(1), 'j', S.m) : '';
+  }
+  if (kind === 'ik') return R`\(i'\neq i\)`;
+  if (kind === 'jl') return R`\(j'\neq j\)`;
+  if (kind === 'yy') {
+    if (S.m === 1) return '';
+    const L = pLinks().map(([k, l]) => `\\((${k},${l})\\)`).join(', ');
+    return ar ? `الروابط \\((j,l)\\) التي يأكل فيها \\(l\\) المفترسَ \\(j\\): ${L}` : `links \\((j,l)\\) where \\(l\\) eats \\(j\\): ${L}`;
+  }
+  return '';
+}
+const gi = kind => kind === 'i' ? sp('i') : kind === 'j' ? sq('j') : kind === 'ij' ? s2('i','j') : kind === 'ik' ? "_{ii'}" : kind === 'jl' ? "_{jj'}" : '';
+function collect(){
+  const V = [], P = [], N = [], refs = [];
+  const prey = { en: S.n > 1 ? R`prey \(i\)` : 'the prey', ar: S.n > 1 ? R`الفريسة \(i\)` : 'الفريسة', arL: S.n > 1 ? R`للفريسة \(i\)` : 'للفريسة' };
+  const pred = { en: S.m > 1 ? R`predator \(j\)` : 'the predator', ar: S.m > 1 ? R`المفترس \(j\)` : 'المفترس', arL: S.m > 1 ? R`للمفترس \(j\)` : 'للمفترس' };
+  const ref = (...k) => k.forEach(x => { if (!refs.includes(x)) refs.push(x); });
+  const add = (sym, kind, en, ar, cen, car, feat, only) => P.push({ sym, kind, en, ar, cen, car: car || cen, feat, only: only || null });
+  const ALL = Array.from({length:S.n}, (_, k) => k + 1);
+  const setOf = f => ALL.filter(k => f(S.pg[k-1]));
+  const addS = (set, sym, kind, en, ar, cen, car, feat) => { if (set.length) add(sym, kind, en, ar, cen, car, feat, set.length < S.n ? set : null); };
+  const restr = (set, lang) => set.length < S.n ? (lang === 'ar' ? ` (للفرائس \\(${setTxt(set)}\\))` : ` (prey \\(${setTxt(set)}\\))`) : '';
+  const note = (en, ar, known) => N.push({ en, ar, known });
+  const i = gi('i'), j = gi('j'), ij = gi('ij');
+
+  // variables
+  V.push({ sym: 't', en: 'Time', ar: 'الزمن', dom: R`\(t\ge 0\)` });
+  if (S.frame === 'pde') V.push({ sym: R`\mathbf{s}`, en: R`Position in the habitat \(\Omega\subset\mathbb{R}^{d}\)`, ar: R`الموقع داخل الموطن \(\Omega\subset\mathbb{R}^{d}\)`, dom: R`\(\mathbf{s}\in\Omega\)` });
+  V.push({ sym: `x${i}`, en: `Density (or biomass) of ${prey.en}`, ar: `كثافة (أو كتلة) ${prey.ar}`, dom: `\\(x${i}${S.frame === 'pde' ? '(t,\\mathbf{s})' : '(t)'}\\ge 0\\)` });
+  V.push({ sym: `y${j}`, en: `Density (or biomass) of ${pred.en}`, ar: `كثافة (أو كتلة) ${pred.ar}`, dom: `\\(y${j}${S.frame === 'pde' ? '(t,\\mathbf{s})' : '(t)'}\\ge 0\\)` });
+  if (S.frame === 'sde') V.push({ sym: `W^{x}${i},\\,W^{y}${j}`, en: 'Independent standard Brownian motions (Itô sense)', ar: 'حركات براونية معيارية مستقلة (بمعنى إيتو)', dom: R`\(t\ge 0\)` });
+
+  // T1 prey growth: each prey species has its own law; rows restricted to some prey say which (Index column)
+  const T1 = 'T₁';
+  const fearS = setOf(c => c.fear);
+  addS(setOf(c => !c.fear), `r${i}`, 'i', `Intrinsic growth rate of ${prey.en}`, `معدل النمو الذاتي ${prey.arL}`, `\\(r${i}>0\\)`, '', T1);
+  addS(setOf(c => !c.fear && c.growth !== 'exp'), `K${i}`, 'i', `Carrying capacity of ${prey.en}`, `سعة الحمل ${prey.arL}`, `\\(K${i}>0\\)`, '', T1);
+  if (fearS.length) {
+    addS(fearS, `r${i}`, 'i', `Birth rate of ${prey.en} in the absence of fear`, `معدل ولادة ${prey.ar} من دون خوف`, `\\(r${i}>d${i}\\)`, `\\(r${i}>d${i}\\)`, T1);
+    addS(fearS, `d${i}`, 'i', `Natural death rate of ${prey.en}`, `معدل الموت الطبيعي ${prey.arL}`, `\\(d${i}\\ge 0\\)`, '', T1);
+    addS(setOf(c => c.fear && c.growth === 'logistic'), `c^{x}${i}`, 'i', `Intraspecific competition coefficient of ${prey.en}`, `معامل التنافس الداخلي ${prey.arL}`, `\\(c^{x}${i}>0\\)`, '', T1);
+    addS(fearS.filter(k => predsOf(k).length), `k${ij}`, 'ij', `Level of fear that ${pred.en} induces in ${prey.en}`, `مستوى الخوف الذي يسببه ${pred.ar} ${prey.arL}`, `\\(k${ij}\\ge 0\\) (\\(k${ij}=0\\): no fear)`, `\\(k${ij}\\ge 0\\) (\\(k${ij}=0\\): لا خوف)`, 'T₁ fear');
+    note('Fear lowers prey births only; the predator gains nothing from it, so its equation is unchanged.', 'الخوف يخفض ولادات الفريسة فقط، ولا يكسب منه المفترس شيئاً، فلا تتغير معادلته.');
+    ref('zanette2011', 'wang2016fear');
+  }
+  if (setOf(c => c.growth === 'exp').length) ref('lotka1925', 'volterra1926');
+  if (setOf(c => c.growth === 'logistic').length) ref('verhulst1838');
+  if (setOf(c => c.growth === 'gompertz').length) { ref('gompertz1825'); note(R`Gompertz growth: the per-capita rate \(r\ln(K/x)\) is unbounded as \(x\to 0^{+}\).`, R`نمو Gompertz: المعدل الفردي \(r\ln(K/x)\) غير محدود عند \(x\to 0^{+}\).`); }
+  const thS = setOf(c => c.growth === 'theta');
+  if (thS.length) { addS(thS, `\\theta${i}`, 'i', 'Shape exponent of density dependence', 'أس شكل الاعتماد على الكثافة', `\\(\\theta${i}>0\\) (\\(\\theta${i}=1\\): logistic)`, `\\(\\theta${i}>0\\) (\\(\\theta${i}=1\\): لوجستي)`, T1); ref('gilpin1973'); }
+  const dlS = setOf(c => c.growth === 'delayed');
+  if (dlS.length) { addS(dlS, `\\tau^{x}${i}`, 'i', `Delay in the self-limitation of ${prey.en}`, `تأخير التنظيم الذاتي ${prey.arL}`, `\\(\\tau^{x}${i}\\ge 0\\)`, '', T1);
+    note(R`Delayed logistic (Hutchinson): without predators the equilibrium \(K\) is stable iff \(r\tau^{x}<\pi/2\).`, R`اللوجستي المتأخر: بلا مفترسات يكون التوازن \(K\) مستقراً إذا وفقط إذا \(r\tau^{x}<\pi/2\).`); ref('hutchinson1948'); }
+  const stS = setOf(c => c.allee === 'strong'), wkS = setOf(c => c.allee === 'weak'), adS = setOf(c => c.allee === 'additive');
+  if (stS.length) {
+    addS(stS, `A${i}`, 'i', `Allee threshold of ${prey.en}`, `عتبة Allee ${prey.arL}`, `\\(0<A${i}<K${i}\\) (strong)`, `\\(0<A${i}<K${i}\\) (قوي)`, 'T₁ Allee');
+    note(R`Strong Allee effect: without predators, prey below \(A\) decline to extinction; the origin is locally stable, so outcomes depend on initial densities.`, R`Allee القوي: من دون مفترسات تنقرض الفريسة تحت \(A\)؛ الأصل مستقر محلياً، فالنتيجة تعتمد على الكثافات الابتدائية.`);
+  }
+  if (wkS.length) {
+    addS(wkS, `A${i}`, 'i', `Allee threshold of ${prey.en}`, `عتبة Allee ${prey.arL}`, `\\(-K${i}<A${i}\\le 0\\) (weak)`, `\\(-K${i}<A${i}\\le 0\\) (ضعيف)`, 'T₁ Allee');
+    note(R`Weak Allee effect: per-capita growth stays positive at low density but increases with density there; \(A\le -K\) removes the effect.`, R`Allee الضعيف: النمو الفردي موجب عند الكثافة المنخفضة لكنه يزداد معها؛ القيمة \(A\le -K\) تلغي الأثر.`);
+  }
+  if (stS.length || wkS.length) ref('allee1931', 'wang2011allee');
+  if (adS.length) {
+    addS(adS, `\\mu${i}`, 'i', 'Strength of the additive Allee effect', 'شدة تأثير Allee الإضافي', `\\(\\mu${i}>0\\); strong if \\(\\mu${i}>r${i}b${i}\\); weak if \\(r${i}b${i}^{2}/K${i}<\\mu${i}<r${i}b${i}\\)`, `\\(\\mu${i}>0\\)؛ قوي إذا \\(\\mu${i}>r${i}b${i}\\)؛ ضعيف إذا \\(r${i}b${i}^{2}/K${i}<\\mu${i}<r${i}b${i}\\)`, 'T₁ Allee');
+    addS(adS, `b${i}`, 'i', 'Prey density at which the Allee effect is half its maximum', 'كثافة الفريسة التي يبلغ عندها الأثر نصف قيمته العظمى', `\\(b${i}>0\\) (weak case needs \\(b${i}<K${i}\\))`, `\\(b${i}>0\\) (الحالة الضعيفة تتطلب \\(b${i}<K${i}\\))`, 'T₁ Allee');
+    ref('dennis1989');
+  }
+  if (!sameGrowth() && symOK()) note(R`Prey species follow different growth laws; in the indexed form \(\mathcal{G}_i\) denotes the growth term of prey \(i\), defined below the system.`, R`أنواع الفريسة تتبع قوانين نمو مختلفة؛ في الصيغة المفهرسة يرمز \(\mathcal{G}_i\) إلى حد نمو الفريسة \(i\)، وهو معرّف أسفل النظام.`);
+  if (S.seasonal) {
+    add(`\\varepsilon${i}`, 'i', 'Amplitude of seasonal forcing', 'سعة التذبذب الموسمي', `\\(0\\le\\varepsilon${i}<1\\) (keeps the rate positive)`, `\\(0\\le\\varepsilon${i}<1\\) (يبقي المعدل موجباً)`, 'T₁ season');
+    add(R`\omega`, '', R`Angular frequency of the seasonal cycle, \(\omega=2\pi/T\)`, R`التردد الزاوي للدورة الموسمية، \(\omega=2\pi/T\)`, R`\(\omega>0\)`, '', 'T₁ season');
+    note('Seasonal forcing makes the system non-autonomous: look for periodic solutions (Cushing 1977) or more complex attractors, including multiple attractors and chaos (Rinaldi et al. 1993), rather than equilibria.', 'التذبذب الموسمي يجعل النظام غير ذاتي: ابحث عن حلول دورية (Cushing 1977) أو جواذب أعقد، منها الجواذب المتعددة والفوضى (Rinaldi et al. 1993)، بدل نقاط التوازن.');
+    ref('cushing1977', 'rinaldi1993');
+  }
+  if (S.preyComp && S.n > 1) add(R`\alpha_{ii'}`, 'ik', R`Competitive effect of prey \(i'\) on prey \(i\)`, R`أثر تنافس الفريسة \(i'\) على الفريسة \(i\)`, R`\(\alpha_{ii'}\ge 0\)`, '', 'T₁ comp.');
+
+  // T2 predation
+  const T2 = 'T₂';
+  if (S.fr === 'Ivlev') {
+    add(`\\rho${ij}`, 'ij', `Maximal consumption rate of ${prey.en} by ${pred.en}`, `أقصى معدل استهلاك`, `\\(\\rho${ij}>0\\)`, '', T2);
+    add(`\\lambda${ij}`, 'ij', 'Rate at which consumption saturates', 'سرعة الوصول إلى التشبع', `\\(\\lambda${ij}>0\\)`, '', T2);
+    ref('ivlev1961');
+  } else {
+    add(`a${ij}`, 'ij', `Attack rate (search efficiency) of ${pred.en} on ${prey.en}`, `معدل هجوم ${pred.ar} على ${prey.ar}`, `\\(a${ij}>0\\)`, '', T2);
+  }
+  if (['H2','H3','H4','BD','CM','RD','HV'].includes(S.fr)) add(`h${ij}`, 'ij', `Handling time of ${prey.en} by ${pred.en}`, `زمن معالجة ${pred.ar} ${prey.arL}`, `\\(h${ij}>0\\); maximal intake \\(1/h${ij}\\)`, `\\(h${ij}>0\\)؛ أقصى استهلاك \\(1/h${ij}\\)`, T2);
+  const frRef = { H1:['holling1959'], H2:['holling1959','rosenzweig1963'], H3:['holling1959'], H4:['andrews1968','freedman1986','xiao2001siam'], BD:['beddington1975','deangelis1975'], CM:['crowley1989'], RD:['arditi1989','kuang1998','xiao2001rd'], HV:['hassell1969'], MI:['hassell1971'], Herd:['ajraldi2011'] };
+  (frRef[S.fr] || []).forEach(k => ref(k));
+  if (S.fr === 'H4') {
+    const pk = S.refuge === 'prop' ? `\\sqrt{G${ij}}/(1-\\phi${i})` : S.refuge === 'num' ? `\\xi${i}+\\sqrt{G${ij}}` : `\\sqrt{G${ij}}`;   // checks S10a-c
+    add(`G${ij}`, 'ij', 'Group-defence (inhibition) constant', 'ثابت الدفاع الجماعي (التثبيط)', `\\(G${ij}>0\\); the response peaks at \\(x${i}=${pk}\\)`, `\\(G${ij}>0\\)؛ تبلغ الاستجابة ذروتها عند \\(x${i}=${pk}\\)`, T2);
+    note('Holling IV: predation falls at high prey density (group defence); there are at most two interior equilibria, and Bogdanov–Takens bifurcations occur (Xiao & Ruan 2001).', 'Holling IV: يقل الافتراس عند الكثافة العالية (دفاع جماعي)؛ يوجد توازنان داخليان على الأكثر، وتحدث تفرعات Bogdanov–Takens (Xiao & Ruan 2001).'); }
+  if (S.fr === 'BD' || S.fr === 'CM') add(`c${j}`, 'j', `Interference among individuals of ${pred.en}`, `تداخل أفراد ${pred.ar}`, `\\(c${j}\\ge 0\\) (\\(c${j}=0\\): Holling II)`, `\\(c${j}\\ge 0\\) (\\(c${j}=0\\): Holling II)`, T2);
+  if (S.fr === 'HV') add(`\\gamma${j}`, 'j', 'Interference exponent', 'أس التداخل', `\\(0<\\gamma${j}<1\\) (0: Holling II; 1: ratio-dependent)`, `\\(0<\\gamma${j}<1\\) (0: Holling II؛ 1: معتمد على النسبة)`, T2);
+  if (S.fr === 'MI') add(`\\nu${j}`, 'j', 'Mutual interference exponent', 'أس التداخل المتبادل', `\\(0\\le\\nu${j}<1\\) (\\(\\nu${j}=0\\): classical term)`, `\\(0\\le\\nu${j}<1\\)`, T2);
+  if (S.fr === 'Herd') { add(`p${i}`, 'i', 'Herd exponent (share of prey exposed at the edge of the herd)', 'أس القطيع (نسبة الفرائس المكشوفة على حافة القطيع)', `\\(0<p${i}<1\\) (\\(p${i}=1/2\\) for a planar herd)`, `\\(0<p${i}<1\\) (\\(p${i}=1/2\\) لقطيع مستوٍ)`, T2);
+    note(R`Herd behaviour: \(x^{p}\) is not Lipschitz at \(x=0\); uniqueness fails there and the prey can vanish in finite time.`, R`سلوك القطيع: \(x^{p}\) غير ليبشيتزي عند \(x=0\)؛ تسقط الوحدانية هناك وقد تنقرض الفريسة في زمن منتهٍ.`); }
+  if (S.fr === 'RD') note(R`Ratio dependence: the response is not defined at \((0,0)\). The origin is a higher-order singular point whose neighbourhood can contain parabolic, elliptic and hyperbolic sectors (Xiao & Ruan 2001), and it can be globally attracting, i.e. joint extinction (Kuang & Beretta 1998).`, R`الاستجابة المعتمدة على النسبة غير معرّفة عند \((0,0)\). الأصل نقطة شاذة من رتبة أعلى قد تحيط بها قطاعات مكافئة وإهليلجية وزائدية (Xiao & Ruan 2001)، وقد يكون جاذباً عالمياً أي انقراضاً مشتركاً (Kuang & Beretta 1998).`);
+  if (S.refuge === 'prop') { add(`\\phi${i}`, 'i', `Fraction of ${prey.en} protected in refuges`, `نسبة ${prey.ar} المحمية في الملاجئ`, `\\(0\\le\\phi${i}<1\\)`, '', 'T₂ refuge'); ref('maynardsmith1974', 'gonzalez2003'); }
+  if (S.refuge === 'num') { add(`\\xi${i}`, 'i', `Number of ${prey.en} protected in refuges`, `عدد أفراد ${prey.ar} المحمية`, `\\(\\xi${i}\\ge 0\\)`, '', 'T₂ refuge'); ref('maynardsmith1974', 'gonzalez2003');
+    note(R`A fixed-number refuge uses \((x-\xi)_{+}\). In the classical Lotka–Volterra model it turns the neutral centre into a stable equilibrium, whereas a fixed-proportion refuge only rescales the attack rate (Maynard Smith 1974); in more realistic models refuges can also destabilise (McNair 1986).`, R`الملجأ العددي يستخدم \((x-\xi)_{+}\). في نموذج Lotka–Volterra الكلاسيكي يحوّل المركز المحايد إلى توازن مستقر، بينما الملجأ النسبي يغيّر مقياس معدل الهجوم فقط (Maynard Smith 1974)؛ وفي نماذج أكثر واقعية قد تزعزع الملاجئ الاستقرار أيضاً (McNair 1986).`); ref('mcnair1986'); }
+  if (S.habitat) { add(R`\kappa`, '', 'Degree of habitat complexity (reduces search efficiency)', 'درجة تعقيد الموطن (تقلل كفاءة البحث)', R`\(0\le\kappa<1\)`, '', 'T₂ habitat'); ref('bairagi2011'); }
+  if (S.coop) { add(`w${j}`, 'j', `Hunting-cooperation strength of ${pred.en}`, `شدة التعاون في الصيد لدى ${pred.ar}`, `\\(w${j}\\ge 0\\)`, '', 'T₂ coop.'); ref('teixeiraalves2017');
+    note('Hunting cooperation makes per-capita predator gain increase with predator density (component Allee effect); it can produce demographic Allee effects in predators and a sudden collapse of the predator population (Teixeira Alves & Hilker 2017).', 'التعاون في الصيد يجعل كسب المفترس الفردي يزداد مع كثافته (Allee مكوِّن)؛ وقد ينتج Allee ديموغرافياً في المفترس وانهياراً مفاجئاً لجماعته (Teixeira Alves & Hilker 2017).'); }
+  if (S.addFood) {
+    add(`\\Lambda${j}`, 'j', `Amount of additional food available to ${pred.en}`, `كمية الغذاء الإضافي المتاح ${pred.arL}`, `\\(\\Lambda${j}\\ge 0\\) (constant)`, `\\(\\Lambda${j}\\ge 0\\) (ثابت)`, 'T₂/T₃ food');
+    if (isLG()) {   // Leslie-Gower predators have no conversion term, so additional food acts only through the shared handling time
+      add(`a^{F}${j},\\,h^{F}${j}`, 'j', 'Attack rate and handling time for additional food', 'معدل الهجوم وزمن المعالجة للغذاء الإضافي', `\\(a^{F}${j},h^{F}${j}>0\\)`, '', 'T₂ food');
+      note(R`Additional food shares the handling time, so it lowers predation in \(T_2\); with Leslie–Gower the predator equation has no conversion term, so the food does not feed the predator directly (use the modified form's \(C\) for that).`, R`الغذاء الإضافي يشارك زمن المعالجة فيخفض الافتراس في \(T_2\)؛ ومع Leslie–Gower لا يوجد حد تحويل في معادلة المفترس، فلا يغذي هذا الغذاء المفترس مباشرة (استعمل \(C\) في الصيغة المعدّلة لذلك).`);
+    } else {
+      add(`a^{F}${j},\\,h^{F}${j},\\,e^{F}${j}`, 'j', 'Attack rate, handling time and conversion efficiency for additional food', 'معدل الهجوم وزمن المعالجة وكفاءة التحويل للغذاء الإضافي', `\\(a^{F}${j},h^{F}${j},e^{F}${j}>0\\)`, '', 'T₂/T₃ food');
+      note(R`Additional food shares the handling time, so it enters the denominator of \(T_2\) and the gain \(T_3\): here \(T_3\neq e\,T_2\).`, R`الغذاء الإضافي يشارك زمن المعالجة، فيدخل مقام \(T_2\) والكسب \(T_3\) معاً: هنا \(T_3\neq e\,T_2\).`);
+    }
+    ref('srinivasu2007');
+  }
+
+  // T3 / T4 predator
+  if (isLG()) {
+    add(`s${j}`, 'j', `Intrinsic growth rate of ${pred.en}`, `معدل النمو الذاتي ${pred.arL}`, `\\(s${j}>0\\)`, '', 'T₃–T₄ LG');
+    add(`\\eta${ij}`, 'ij', `Predators supported per unit of ${prey.en} (carrying capacity of ${pred.en} per prey)`, `عدد المفترسات التي تعيلها وحدة من ${prey.ar}`, `\\(\\eta${ij}>0\\)`, '', 'T₃–T₄ LG');
+    ref('leslie1948', 'leslie1960');
+    if (S.num === 'MLG') { add(`C${j}`, 'j', `Carrying capacity of ${pred.en} from alternative food`, `سعة الحمل ${pred.arL} من الغذاء البديل`, `\\(C${j}>0\\) (removes the singularity at zero prey)`, `\\(C${j}>0\\) (يزيل الشذوذ عند انعدام الفريسة)`, 'T₃–T₄ LG'); ref('azizalaoui2003'); }
+    else note(R`Leslie–Gower: the predator equation is singular when its prey vanish; the modified form adds \(C>0\).`, R`Leslie–Gower: معادلة المفترس شاذة عند انعدام فرائسه؛ الصيغة المعدّلة تضيف \(C>0\).`);
+  } else {
+    add(`e${ij}`, 'ij', `Conversion efficiency of ${prey.en} into ${pred.en}`, `كفاءة تحويل ${prey.ar} إلى ${pred.ar}`, `\\(e${ij}>0\\); \\(e${ij}<1\\) when densities are biomass or energy`, `\\(e${ij}>0\\)؛ \\(e${ij}<1\\) عندما تُقاس الكثافات كتلةً أو طاقة`, 'T₃');
+    add(`m${j}`, 'j', `Natural death rate of ${pred.en}`, `معدل الموت الطبيعي ${pred.arL}`, `\\(m${j}>0\\)`, '', 'T₄');
+    if (S.predAllee) { add(`\\psi${j}`, 'j', `Mate-finding scale of ${pred.en}`, `مقياس إيجاد الشريك ${pred.arL}`, `\\(\\psi${j}>0\\)`, '', 'T₃ Allee'); ref('courchamp2008');
+      note(R`Predator Allee effect: at low predator density per-capita gain vanishes, so \(y=0\) becomes locally stable.`, R`Allee في المفترس: عند الكثافة المنخفضة ينعدم الكسب الفردي، فيصبح \(y=0\) مستقراً محلياً.`); }
+    if (S.gest) { add(`\\tau${j}`, 'j', `Gestation (or digestion) delay of ${pred.en}`, `تأخير الحمل/الهضم ${pred.arL}`, `\\(\\tau${j}\\ge 0\\)`, '', 'T₃ delay'); ref('cushing1977book', 'kuang1993');
+      note(R`Delay system: initial data are functions on \([-\tau,0]\); expect stability switches through Hopf bifurcations at critical delays. With delay-dependent survival (maturation) a common sequence is stable, unstable, stable again as the delay grows (Beretta & Kuang 2002).`, R`نظام تأخيري: الشروط الابتدائية دوال على \([-\tau,0]\)؛ تُتوقع تبدلات استقرار عبر Hopf عند تأخيرات حرجة. ومع بقاء معتمد على التأخير (النضج) يشيع تسلسل: مستقر ثم غير مستقر ثم مستقر مع زيادة التأخير (Beretta & Kuang 2002).`); ref('beretta2002'); }
+    if (S.mat) { add(`\\delta^{J}${j}`, 'j', `Juvenile death rate of ${pred.en} during maturation`, `معدل موت صغار ${pred.ar} خلال النضج`, `\\(\\delta^{J}${j}\\ge 0\\)`, '', 'T₃ delay'); ref('gourley2004'); }
+    if (S.dd) { add(`\\delta${j}`, 'j', `Density-dependent mortality of ${pred.en}`, `الموت المعتمد على الكثافة ${pred.arL}`, `\\(\\delta${j}\\ge 0\\)`, '', 'T₄'); ref('bazykin1998'); }
+    if (S.predComp && S.m > 1) add(R`\beta_{jj'}`, 'jl', R`Competitive effect of predator \(j'\) on predator \(j\)`, R`أثر تنافس المفترس \(j'\) على المفترس \(j\)`, R`\(\beta_{jj'}\ge 0\)`, '', 'T₄ comp.');
+  }
+
+  // predators eating predators (k eaten by l; written j eaten by l in the table)
+  const LT = linkTypes();
+  if (LT.PL.length) {
+    const yy = S.m > 1 ? '_{jl}' : '', many = S.m > 1, fy = 'y→y';
+    const W = many
+      ? { atk: [R`Attack rate of predator \(l\) on predator \(j\)`, R`معدل هجوم المفترس \(l\) على المفترس \(j\)`],
+          hnd: [R`Handling time of predator \(j\) by predator \(l\)`, R`زمن معالجة المفترس \(l\) للمفترس \(j\)`],
+          cnv: [R`Conversion efficiency of predator \(j\) into predator \(l\)`, R`كفاءة تحويل المفترس \(j\) إلى المفترس \(l\)`],
+          cap: [R`Predators \(l\) supported per unit of predator \(j\)`, R`عدد المفترسات \(l\) التي تعيلها وحدة من المفترس \(j\)`] }
+      : { atk: ['Cannibalism attack rate (predator on conspecifics)', 'معدل الافتراس الذاتي (هجوم المفترس على أفراد نوعه)'],
+          hnd: ['Handling time of a conspecific victim', 'زمن معالجة الضحية من النوع نفسه'],
+          cnv: ['Conversion efficiency of eaten conspecifics into new predators', 'كفاءة تحويل الأفراد المأكولين إلى مفترسات جديدة'],
+          cap: ['', ''] };
+    if (S.fr === 'Ivlev') {
+      add(`\\rho^{y}${yy}`, 'yy', many ? R`Maximal consumption rate of predator \(j\) by predator \(l\)` : 'Maximal cannibalism rate', many ? R`أقصى معدل استهلاك المفترس \(l\) للمفترس \(j\)` : 'أقصى معدل للافتراس الذاتي', `\\(\\rho^{y}${yy}>0\\)`, '', fy);
+      add(`\\lambda^{y}${yy}`, 'yy', 'Rate at which consumption of predator food saturates', 'سرعة تشبع استهلاك غذاء المفترس من المفترسات', `\\(\\lambda^{y}${yy}>0\\)`, '', fy);
+    } else add(`a^{y}${yy}`, 'yy', W.atk[0], W.atk[1], `\\(a^{y}${yy}>0\\)`, '', fy);
+    if (['H2','H3','H4','BD','CM','RD','HV'].includes(S.fr)) add(`h^{y}${yy}`, 'yy', W.hnd[0], W.hnd[1], `\\(h^{y}${yy}>0\\)`, '', fy);
+    if (isLG()) add(`\\eta^{y}${yy}`, 'yy', W.cap[0], W.cap[1], `\\(\\eta^{y}${yy}>0\\)`, '', fy);
+    else {
+      const cl = LT.can.map(([k, l]) => `e^{y}${s2y(k,l)}<1`).join(',\\ ');
+      add(`e^{y}${yy}`, 'yy', W.cnv[0], W.cnv[1],
+        many ? `\\(e^{y}${yy}>0\\); \\(e^{y}${yy}<1\\) when densities are biomass or energy` + (cl ? `; \\(${cl}\\) always (cannibalism)` : '') : R`\(0<e^{y}<1\) (a population cannot grow by eating itself)`,
+        many ? `\\(e^{y}${yy}>0\\)؛ \\(e^{y}${yy}<1\\) عندما تُقاس الكثافات كتلةً أو طاقة` + (cl ? `؛ \\(${cl}\\) دائماً (افتراس ذاتي)` : '') : R`\(0<e^{y}<1\) (لا تنمو الجماعة بأكل نفسها)`, fy);
+    }
+    const yT = k => `\\(y${sq(k)}\\)`;
+    const eats = (L, ar) => L.map(([k, l]) => ar ? `${yT(l)} يأكل ${yT(k)}` : `${yT(l)} eats ${yT(k)}`).join(ar ? '، ' : ', ');
+    if (LT.can.length) {
+      const who = many ? LT.can.map(([k]) => yT(k)).join(', ') : 'the predator';
+      const whoA = many ? LT.can.map(([k]) => yT(k)).join('، ') : 'المفترس';
+      note(`Cannibalism (${who}): eaten conspecifics are turned into new predators with efficiency below 1, so cannibalism acts as density-dependent mortality; it can stabilise predator–prey oscillations and raise the standing stocks of both prey and predator (Kohlmeier & Ebenhöh 1995).`,
+           `افتراس ذاتي (${whoA}): يتحول الأفراد المأكولون إلى مفترسات جديدة بكفاءة أقل من 1، فيعمل الافتراس الذاتي كموت معتمد على الكثافة؛ وقد يثبّت تذبذبات المفترس والفريسة ويرفع مخزونَي الفريسة والمفترس معاً (Kohlmeier & Ebenhöh 1995).`);
+      ref('kohlmeier1995');
+    }
+    if (LT.mut.length) {
+      note(`Mutual predation among predators (${LT.mut.map(([k, l]) => `${yT(k)} and ${yT(l)}`).join('; ')}): the two eat each other, so each is both predator and prey of the other.`,
+           `افتراس متبادل بين المفترسات (${LT.mut.map(([k, l]) => `${yT(k)} و${yT(l)}`).join('؛ ')}): كل منهما يأكل الآخر، فهو مفترس له وفريسة في آن واحد.`);
+      ref('polis1989', 'almohanna2025');
+    }
+    if (LT.igp.length) {
+      note(`Intraguild predation (${eats(LT.igp)}): the eater and its victim also share prey. In the models of Holt & Polis (1997), coexistence of all three requires the intraguild prey to be the better competitor for the shared prey and the intraguild predator to gain substantially from eating it; coexistence is most likely at intermediate productivity.`,
+           `افتراس ضمن النقابة (${eats(LT.igp, true)}): الآكل وضحيته يتشاركان الفريسة أيضاً. في نماذج Holt & Polis (1997) يتطلب تعايش الثلاثة أن تكون فريسة النقابة المنافسَ الأقوى على الفريسة المشتركة، وأن يكسب مفترس النقابة كثيراً من أكلها؛ والتعايش أرجح عند إنتاجية متوسطة.`);
+      ref('polis1989', 'holt1997');
+    }
+    if (LT.chain.length) {
+      note(`Food chain (${eats(LT.chain)}): a higher predator eats a predator without sharing its prey.` + (S.fr === 'H2' ? ' With Holling II links the three-level chain can be chaotic (Hastings & Powell 1991).' : ''),
+           `سلسلة غذائية (${eats(LT.chain, true)}): مفترس أعلى يأكل مفترساً من دون أن يشاركه فريسته.` + (S.fr === 'H2' ? ' مع روابط Holling II قد تكون السلسلة ذات المستويات الثلاثة فوضوية (Hastings & Powell 1991).' : ''));
+      ref('hastings1991');
+    }
+    if (S.refuge !== 'none' || S.habitat || S.coop || S.fr === 'Herd' || S.fr === 'H4')
+      note(`Refuge, habitat complexity, hunting cooperation, herd behaviour and group defence act on prey links only; predator–predator links use the base form of the chosen response${S.fr === 'Herd' ? ' (here Holling I)' : S.fr === 'H4' ? ' (here Holling II)' : ''}.`,
+           `الملجأ وتعقيد الموطن والتعاون في الصيد وسلوك القطيع والدفاع الجماعي تؤثر في روابط الفريسة فقط؛ وروابط المفترس بالمفترس تستخدم الصيغة الأساسية للاستجابة المختارة${S.fr === 'Herd' ? ' (هنا Holling I)' : S.fr === 'H4' ? ' (هنا Holling II)' : ''}.`);
+  }
+
+  // Phi terms
+  const persistS = setOf(c => !c.fear && c.allee === 'none' && ['exp','logistic','theta','delayed'].includes(c.growth));
+  const msyS = setOf(c => !c.fear && c.allee === 'none' && c.growth === 'logistic');
+  const harvRows = (kind, sup, k, who) => {
+    if (kind === 'none') return;
+    const id = sup === 'x' ? i : j, w = who;
+    const pe = sup === 'x' && kind === 'effort' && persistS.length, my = sup === 'x' && msyS.length;
+    if (kind === 'effort' || kind === 'mm') {
+      add(`q^{${sup}}${id}`, k, `Catchability of ${w.en}`, `قابلية الصيد ${w.arL}`, `\\(q^{${sup}}${id}\\ge 0\\)`, '', 'Φ harvest');
+      add(`E^{${sup}}${id}`, k, `Harvesting effort on ${w.en}`, `جهد الحصاد على ${w.ar}`, `\\(E^{${sup}}${id}\\ge 0\\)` + (pe ? `; without predators the prey persists only if \\(q^{x}${id}E^{x}${id}<r${id}\\)${restr(persistS, 'en')}` : ''), `\\(E^{${sup}}${id}\\ge 0\\)` + (pe ? `؛ بلا مفترسات تبقى الفريسة فقط إذا \\(q^{x}${id}E^{x}${id}<r${id}\\)${restr(persistS, 'ar')}` : ''), 'Φ harvest');
+    }
+    if (kind === 'mm') add(`\\ell^{${sup}}${k === 'i' ? s2c(1,'i') : s2cy(1,'j')},\\,\\ell^{${sup}}${k === 'i' ? s2c(2,'i') : s2cy(2,'j')}`, k, 'Saturation constants of the harvest rate', 'ثابتا تشبع معدل الحصاد', 'positive', 'موجبان', 'Φ harvest');
+    if (kind === 'yield') { add(`H^{${sup}}${id}`, k, `Constant harvest (yield) of ${w.en}`, `حصاد بكمية ثابتة من ${w.ar}`, `\\(H^{${sup}}${id}\\ge 0\\)` + (my ? `; with logistic growth \\(H^{x}${id}<r${id}K${id}/4\\)${restr(msyS, 'en')}` : ''), `\\(H^{${sup}}${id}\\ge 0\\)` + (my ? `؛ مع اللوجستي \\(H^{x}${id}<r${id}K${id}/4\\)${restr(msyS, 'ar')}` : ''), 'Φ harvest');
+      note('Constant-yield harvesting does not vanish at zero density: switch it off when the population reaches zero to keep solutions non-negative.', 'الحصاد بكمية ثابتة لا ينعدم عند الكثافة صفر: يجب إيقافه عند انعدام الجماعة لتبقى الحلول غير سالبة.'); }
+    ref(kind === 'effort' ? 'clark1976' : kind === 'yield' ? 'brauer1979' : 'gupta2013');
+    if (sup === 'y') ref('chaudhuri1996');
+  };
+  harvRows(S.harvX, 'x', 'i', prey);
+  if (S.immX) { add(`I^{x}${i}`, 'i', `Constant immigration of ${prey.en}`, `هجرة داخلية ثابتة ${prey.arL}`, `\\(I^{x}${i}\\ge 0\\)`, '', 'Φx'); ref('tahara2018');
+    note(R`Prey immigration: \(x=0\) is no longer invariant; in the classical model any \(I>0\) turns the neutral centre into an asymptotically stable equilibrium.`, R`هجرة الفريسة: لم يعد \(x=0\) ثابتاً؛ في النموذج الكلاسيكي أي \(I>0\) يحوّل المركز إلى توازن مستقر تقاربياً.`); }
+  harvRows(S.harvY, 'y', 'j', pred);
+  if (S.immY) { add(`I^{y}${j}`, 'j', `Constant immigration of ${pred.en}`, `هجرة داخلية ثابتة ${pred.arL}`, `\\(I^{y}${j}\\ge 0\\)`, '', 'Φy'); ref('tahara2018'); }
+  if (S.antiPred === 'kill') { add(`\\zeta${ij}`, 'ij', `Rate at which ${prey.en} kill ${pred.en} (counter-attack)`, `معدل قتل ${prey.ar} ${pred.arL} (هجوم مضاد)`, `\\(\\zeta${ij}\\ge 0\\); no gain for the prey`, `\\(\\zeta${ij}\\ge 0\\)؛ بلا كسب للفريسة`, 'Φy'); ref('tang2015'); }
+  if (S.antiPred === 'eat') {
+    add(`\\zeta${ij}`, 'ij', `Rate at which ${prey.en} attack and eat ${pred.en}`, `معدل هجوم ${prey.ar} على ${pred.ar} وأكله`, `\\(\\zeta${ij}\\ge 0\\)`, '', 'Φx/Φy mutual');
+    add(`e^{x}${ij}`, 'ij', `Conversion efficiency of ${pred.en} eaten by ${prey.en} into new prey`, `كفاءة تحويل ${pred.ar} الذي تأكله ${prey.ar} إلى فرائس جديدة`, `\\(e^{x}${ij}>0\\); \\(e^{x}${ij}<1\\) when densities are biomass or energy`, `\\(e^{x}${ij}>0\\)؛ \\(e^{x}${ij}<1\\) عندما تُقاس الكثافات كتلةً أو طاقة`, 'Φx/Φy mutual');
+    note(R`Mutual predation: the prey also eats its predator, so each species is both predator and prey of the other. In biomass units both conversion efficiencies are below 1, so the pair cannot create biomass by eating each other.`, R`افتراس متبادل: الفريسة تأكل مفترسها أيضاً، فكل نوع مفترس للآخر وفريسة له. بوحدات الكتلة تكون كفاءتا التحويل أقل من 1، فلا يستطيع الزوج توليد كتلة بأكل أحدهما الآخر.`);
+    ref('polis1989', 'almohanna2025');
+  }
+  if (S.toxic) { add(`\\vartheta${ij}`, 'ij', `Toxicity of ${prey.en} to ${pred.en}`, `سمية ${prey.ar} ${pred.arL}`, `\\(\\vartheta${ij}\\ge 0\\)`, '', 'Φy');
+    add(`g${i}`, 'i', 'Half-saturation constant of toxin release', 'ثابت نصف التشبع لإطلاق السم', `\\(g${i}>0\\)`, '', 'Φy'); ref('chattopadhyay2002'); }
+
+  // framework
+  if (S.frame === 'pde') {
+    add(`D^{x}${i},\\,D^{y}${j}`, '', 'Diffusion coefficients', 'معاملات الانتشار', `\\(D^{x}${i},D^{y}${j}>0\\)`, '', 'd/dt');
+    note(R`Reaction–diffusion: no-flux boundary conditions \(\partial_{\nu}x=\partial_{\nu}y=0\) on \(\partial\Omega\) and non-negative initial data. Turing patterns need predator self-limitation (e.g. \(\delta y^{2}\), Beddington–DeAngelis or Leslie–Gower) and \(D^{y}/D^{x}\) above a threshold.`, R`انتشار مكاني: شروط حدية بلا تدفق \(\partial_{\nu}x=\partial_{\nu}y=0\) على \(\partial\Omega\) وشروط ابتدائية غير سالبة. أنماط Turing تحتاج تنظيماً ذاتياً للمفترس (مثل \(\delta y^{2}\) أو Beddington–DeAngelis أو Leslie–Gower) ونسبة \(D^{y}/D^{x}\) فوق عتبة.`);
+    ref('skellam1951', 'segel1972');
+  }
+  if (S.frame === 'sde') {
+    add(`\\sigma^{x}${i},\\,\\sigma^{y}${j}`, '', 'Intensities of environmental noise', 'شدة الضجيج البيئي', `\\(\\sigma^{x}${i},\\sigma^{y}${j}\\ge 0\\)`, '', 'd/dt');
+    const sdeE = setOf(c => !c.fear && c.allee === 'none' && ['exp','logistic','theta'].includes(c.growth)), sdeF = setOf(c => c.fear), sdeG = setOf(c => !c.fear && c.allee === 'none' && c.growth === 'gompertz');
+    const pe = [], pa = [];   // checks S26a-d
+    if (sdeE.length) { pe.push(R`persistence needs \(r>(\sigma^{x})^{2}/2\)` + restr(sdeE, 'en')); pa.push(R`البقاء يتطلب \(r>(\sigma^{x})^{2}/2\)` + restr(sdeE, 'ar')); }
+    if (sdeF.length) { pe.push(R`with fear it needs \(r-d>(\sigma^{x})^{2}/2\)` + restr(sdeF, 'en')); pa.push(R`ومع الخوف يتطلب \(r-d>(\sigma^{x})^{2}/2\)` + restr(sdeF, 'ar')); }
+    if (sdeG.length) { pe.push(R`Gompertz prey persist for every \(\sigma^{x}\), since \(\ln x\) is an Ornstein–Uhlenbeck process` + restr(sdeG, 'en')); pa.push(R`وفريسة Gompertz تبقى لكل \(\sigma^{x}\) لأن \(\ln x\) عملية Ornstein–Uhlenbeck` + restr(sdeG, 'ar')); }
+    note('Itô stochastic system: noise is proportional to density, so densities stay positive.' + (pe.length ? ' Prey alone (no predators): ' + pe.join('; ') + '.' : ''),
+         'نظام عشوائي بمعنى إيتو: الضجيج متناسب مع الكثافة، فتبقى الكثافات موجبة.' + (pa.length ? ' الفريسة وحدها (بلا مفترسات): ' + pa.join('؛ ') + '.' : ''));
+    ref('rudnicki2003');
+  }
+  if (Array.from({length:S.m}, (_, k) => k + 1).some(j => dietOf(j).length > 1)) ref('holt1977');   // shared predator: apparent competition
+  if (S.n === 1 && predsOf(1).length > 1) ref('hsu1978');                                            // predators competing for one prey
+  if (hasD() && Array.from({length:S.m}, (_, k) => k + 1).some(l => foodCount(l, 'num') > 1)) {
+    const D = `\\(D${sq('j')}\\)`, of = S.m > 1 ? R`predator \(j\)` : 'the predator', ofA = S.m > 1 ? R`المفترس \(j\)` : 'المفترس';
+    note(`Several food items share one handling time: ${D} sums over all prey${LT.PL.length ? ' and predator food' : ''} of ${of} (multi-prey functional response).`,
+         `أنواع الغذاء المتعددة تتشارك زمن المعالجة: ${D} يجمع على كل فرائس ${ofA}${LT.PL.length ? ' وما يأكله من مفترسات' : ''}.`);
+  }
+
+  // classical results for one prey and one predator
+  const c1 = S.pg[0];
+  const plain = S.n === 1 && S.m === 1 && !c1.fear && c1.allee === 'none' && !S.seasonal && S.refuge === 'none' && !S.habitat && !S.coop && !S.addFood && S.num === 'conv' && !S.predAllee && !S.gest && !S.dd && S.harvX === 'none' && !S.immX && S.harvY === 'none' && !S.immY && S.antiPred === 'none' && !S.toxic && S.frame === 'ode' && !LT.PL.length;
+  if (plain && c1.growth === 'exp' && S.fr === 'H1') note(R`Classical result: the interior equilibrium \((m/ea,\ r/a)\) is a centre surrounded by closed orbits; \(H=eax-m\ln x+ay-r\ln y\) is conserved.`, R`نتيجة كلاسيكية: التوازن الداخلي \((m/ea,\ r/a)\) مركز تحيط به مدارات مغلقة؛ الكمية \(H=eax-m\ln x+ay-r\ln y\) محفوظة.`, true);
+  if (plain && c1.growth === 'logistic' && S.fr === 'H1') note(R`Classical result: an interior equilibrium \(x^*=m/(ea)\), \(y^*=\tfrac{r}{a}(1-x^*/K)\) exists iff \(m<eaK\) and is then globally asymptotically stable.`, R`نتيجة كلاسيكية: يوجد توازن داخلي \(x^*=m/(ea)\)، \(y^*=\tfrac{r}{a}(1-x^*/K)\) إذا وفقط إذا \(m<eaK\)، وهو مستقر تقاربياً عالمياً.`, true);
+  if (plain && c1.growth === 'logistic' && S.fr === 'H2') note(R`Classical result (Rosenzweig–MacArthur): \(x^*=m/[a(e-mh)]\), \(y^*=\tfrac{r}{a}(1-x^*/K)(1+ahx^*)\); it exists iff \(e>mh\) and \(x^*<K\), and is locally stable iff \(x^*>\tfrac12(K-1/(ah))\). A supercritical Hopf bifurcation occurs at equality; beyond it a unique stable limit cycle exists (Cheng 1981), so enrichment (larger \(K\)) destabilises the equilibrium: the paradox of enrichment (Rosenzweig 1971).`, R`نتيجة كلاسيكية (Rosenzweig–MacArthur): \(x^*=m/[a(e-mh)]\)، \(y^*=\tfrac{r}{a}(1-x^*/K)(1+ahx^*)\)؛ يوجد إذا وفقط إذا \(e>mh\) و\(x^*<K\)، ومستقر محلياً إذا وفقط إذا \(x^*>\tfrac12(K-1/(ah))\)، وعند المساواة تفرع Hopf فوق حرج، وبعده توجد دورة حدية مستقرة وحيدة (Cheng 1981)، فالإثراء (زيادة \(K\)) يزعزع التوازن: مفارقة الإثراء (Rosenzweig 1971).`, true), ref('cheng1981', 'rosenzweig1971');
+  note(R`All parameters are non-negative unless their constraint says otherwise, and the non-negative orthant is invariant unless a note above says otherwise.`, R`جميع البارامترات غير سالبة ما لم يذكر قيدها خلاف ذلك، والمنطقة غير السالبة لا متغيرة ما لم تذكر ملاحظة أعلاه خلاف ذلك.`);
+  return { V, P, N, refs };
+}
+
+/* ------------------------------------------------------------------ rendering */
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+function summaryChips(){
+  const lab = { exp:'exponential', logistic:'logistic', gompertz:'Gompertz', theta:'θ-logistic', delayed:'delayed logistic' };
+  const fr = { H1:'Holling I', H2:'Holling II', H3:'Holling III', H4:'Holling IV', Ivlev:'Ivlev', BD:'Beddington–DeAngelis', CM:'Crowley–Martin', RD:'ratio-dependent', HV:'Hassell–Varley', MI:'mutual interference', Herd:'herd behaviour' };
+  const gl = g => (g.fear ? 'fear + ' : '') + lab[g.growth] + (g.allee !== 'none' ? ` + ${g.allee} Allee` : '');
+  const c = [[`${S.n} prey · ${S.m} predator${S.m > 1 ? 's' : ''}`, 'ac']];
+  if (sameGrowth()) c.push([gl(S.pg[0]), 't1']); else S.pg.forEach((g, k) => c.push([`x${k + 1}: ${gl(g)}`, 't1']));
+  c.push([fr[S.fr], 't2']);
+  const LT = linkTypes();
+  if (LT.can.length) c.push(['cannibalism', 't3']);
+  if (LT.mut.length) c.push(['mutual predation (predators)', 't3']);
+  if (LT.igp.length) c.push(['intraguild predation', 't3']);
+  if (LT.chain.length) c.push(['food chain', 't3']);
+  if (S.seasonal) c.push(['seasonal', 't1']);
+  if (S.refuge !== 'none') c.push([`refuge (${S.refuge === 'prop' ? 'proportion' : 'number'})`, 't2']);
+  if (S.habitat) c.push(['habitat complexity', 't2']);
+  if (S.coop) c.push(['hunting cooperation', 't2']);
+  if (S.addFood) c.push(['additional food', 't2']);
+  if (isLG()) c.push([S.num === 'LG' ? 'Leslie–Gower' : 'modified Leslie–Gower', 't3']);
+  if (S.predAllee) c.push(['predator Allee', 't3']);
+  if (S.gest) c.push([S.mat ? 'maturation delay' : 'gestation delay', 't3']);
+  if (S.dd) c.push(['δy²', 't4']);
+  if (S.harvX !== 'none') c.push([`prey harvest (${S.harvX})`, 'ph']);
+  if (S.harvY !== 'none') c.push([`predator harvest (${S.harvY})`, 'ph']);
+  if (S.immX || S.immY) c.push(['immigration', 'ph']);
+  if (S.antiPred !== 'none') c.push([S.antiPred === 'eat' ? 'prey eats predator' : 'anti-predator', 'ph']);
+  if (S.toxic) c.push(['toxic prey', 'ph']);
+  if (S.frame !== 'ode') c.push([S.frame === 'pde' ? 'reaction–diffusion' : 'stochastic', 'op']);
+  $('summary').innerHTML = c.map(([t, k]) => `<span class="chip c-${k}">${esc(t)}</span>`).join('');
+}
+let LAST = null;
+/* "where" definitions: one line if short, otherwise one per line */
+function whereTex(W){
+  if (!W.length) return '';
+  if (W.length === 1 || W.join('').length < 90) return `\\[\\text{where }${W.join(',\\quad ')}.\\]`;
+  return `\\[\\begin{aligned}${W.map((w, k) => `${k === 0 ? '\\text{where }' : ''}&${w}${k < W.length - 1 ? ',' : '.'}`).join('\\\\[2pt]')}\\end{aligned}\\]`;
+}
+function render(){
+  validate();
+  summaryChips();
+  const symShown = symOK();
+  const genL = symShown ? system('sym') : [], expL = system('num');
+  const gen = symShown ? aligned(genL) : '';
+  const exp = aligned(expL);
+  const where = whereLines('num');
+  const whereSym = symShown ? whereLines('sym') : [];
+  const C = collect();
+  LAST = { gen, exp, genL, expL, where, whereSym, C, symShown };
+  $('general').hidden = !symShown;
+  $('expLabel').textContent = (S.n > 1 || S.m > 1) ? `Expanded system (${S.n} prey, ${S.m} predator${S.m > 1 ? 's' : ''})` + (symShown ? '' : '. No indexed form: not every predator eats every prey, or predators eat predators.') : 'System';
+  const L = S.lang;
+  const cell = esc;   // escape < > & so inequalities such as 0<A<K stay text; MathJax typesets the TeX inside \( \)
+  const vRows = C.V.map(v => `<tr><td class="sym">\\(${cell(v.sym)}\\)</td><td class="${L === 'ar' ? 'rtl' : ''}">${cell(L === 'ar' ? v.ar : v.en)}</td><td>${cell(v.dom)}</td></tr>`).join('');
+  const pRows = C.P.map(p => `<tr><td class="sym">\\(${cell(p.sym)}\\)</td><td class="${L === 'ar' ? 'rtl' : ''}">${cell(L === 'ar' ? p.ar : p.en)}</td><td class="${L === 'ar' ? 'rtl' : ''}">${cell(L === 'ar' ? p.car : p.cen)}</td><td class="${L === 'ar' ? 'rtl' : ''}">${cell(idxText(p.kind, L, p.only))}</td><td class="feat">${esc(p.feat)}</td></tr>`).join('');
+  const nodes = [$('mathGeneral'), $('mathModel'), $('mathWhere'), $('tVars'), $('tPars'), $('notes')];
+  if (MJ) MathJax.typesetClear(nodes);
+  $('mathGeneral').textContent = symShown ? `\\[${gen}\\]` + whereTex(whereSym) : '';
+  $('mathModel').textContent = `\\[${exp}\\]`;
+  $('mathWhere').textContent = whereTex(where);
+  $('tVars').tBodies[0].innerHTML = vRows;
+  $('tPars').tBodies[0].innerHTML = pRows;
+  $('tPars').tHead.innerHTML = L === 'ar'
+    ? '<tr><th>الرمز</th><th class="rtl">المعنى</th><th class="rtl">القيد</th><th>الدليل</th><th>المصدر</th></tr>'
+    : '<tr><th>Symbol</th><th>Meaning</th><th>Constraint</th><th>Index</th><th>From</th></tr>';
+  $('tVars').tHead.innerHTML = L === 'ar' ? '<tr><th>الرمز</th><th class="rtl">المعنى</th><th>المجال</th></tr>' : '<tr><th>Symbol</th><th>Meaning</th><th>Domain</th></tr>';
+  $('notes').innerHTML = C.N.map(n => `<li class="${n.known ? 'known' : ''} ${L === 'ar' ? 'rtl' : ''}">${cell(L === 'ar' ? n.ar : n.en)}</li>`).join('');
+  $('refs').innerHTML = C.refs.filter(k => REFS[k]).map(k => { const r = REFS[k]; return `<li>${esc(r.cite)}${r.doi ? ` <a href="https://doi.org/${esc(r.doi)}" target="_blank" rel="noopener">doi:${esc(r.doi)}</a>` : ''}</li>`; }).join('');
+  if (MJ) MathJax.typesetPromise(nodes).then(() => $('wrap').classList.add('mj')).catch(e => console.error(e));
+}
+
+/* ------------------------------------------------------------------ exports */
+/* rough printed width of a TeX string, in characters: a fraction counts as its wider part, subscripts as less than half */
+function texW(s){
+  const w0 = t => t.replace(/_\{[^{}]*\}|_./g, m => '.'.repeat(Math.ceil((m.length - 2) * 0.45)))
+    .replace(/\\(left|right|Big|quad)\b|\\,/g, '').replace(/\\[a-zA-Z]+/g, m => /^\\(exp|ln|sin)$/.test(m) ? 'exp' : 'g').replace(/[{}^]/g, '').length;
+  let t = s;
+  for (let k = 0; k < 10 && /\\frac\{[^{}]*\}\{[^{}]*\}/.test(t); k++) t = t.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, (_, a, b) => `(${w0(a) >= w0(b) ? a : b})`);
+  return w0(t);
+}
+/* split at + and - outside braces, brackets and \left..\right groups */
+function topSplit(s){
+  const out = []; let d = 0, cur = '';
+  for (let k = 0; k < s.length; k++) {
+    const big = s.slice(k).match(/^\\(big|Big|bigg|Bigg)[lr]?(\\\{|\\\}|.)/);   // sized delimiters do not nest
+    if (big) { cur += big[0]; k += big[0].length - 1; continue; }
+    const lr = s.slice(k).match(/^\\(left|right)(\\\{|\\\}|.)/);
+    if (lr) { d += lr[1] === 'left' ? 1 : -1; cur += lr[0]; k += lr[0].length - 1; continue; }
+    const c = s[k];
+    if ('{(['.includes(c)) d++; else if ('})]'.includes(c)) d--;
+    if ((c === '+' || c === '-') && d === 0 && cur && !/[\^_]$/.test(cur)) { out.push(cur); cur = c; continue; }
+    cur += c;
+  }
+  out.push(cur); return out;
+}
+/* a term too wide for one line: open its first top-level \left( ... \right) sum with \Big( ... \Big) so it can break inside */
+function openWide(p, budget){
+  if (texW(p) <= budget) return [p];
+  for (let k = p.indexOf('\\left('); k >= 0; k = p.indexOf('\\left(', k + 1)) {
+    let d = 0, e = -1;
+    for (let q = k; q < p.length; q++) { if (p.startsWith('\\left', q)) d++; else if (p.startsWith('\\right', q)) { d--; if (d === 0) { e = q; break; } } }
+    if (e < 0 || !p.startsWith('\\right)', e)) continue;
+    const pre = p.slice(0, k), inner = topSplit(p.slice(k + 6, e)), post = p.slice(e + 7);
+    if (inner.length < 2 || topSplit(pre).length > 1) continue;
+    inner[0] = `${pre}\\Big(${inner[0]}`; inner[inner.length - 1] += `\\Big)${post}`;
+    return inner;
+  }
+  return [p];
+}
+/* pack terms into lines no wider than the budget */
+function packLines(pcs, budget){
+  const out = []; let cur = '';
+  pcs.flatMap(p => openWide(p, budget)).forEach(p => { if (cur && texW(cur + p) > budget) { out.push(cur); cur = p; } else cur += p; });
+  out.push(cur); return out;
+}
+/* one equation per aligned row; a long right side is broken at its + and - signs */
+function latexAligned(L, budget = 56){
+  return L.map(([l, r, F], q) => {
+    const pcs = F.T.map(([s, t], k) => (k === 0 ? (s === '-' ? '-' : '') : (s === '-' ? '-' : '+')) + t);
+    if (F.pre.endsWith('+')) { pcs[0] = (pcs[0].startsWith('-') ? '' : '+') + pcs[0]; pcs.unshift(F.pre.slice(0, -1)); }   // diffusion term
+    else pcs[0] = F.pre + pcs[0];
+    pcs[pcs.length - 1] += F.post;
+    return `${l} &= ${packLines(pcs, budget).join('\\\\\n  &\\quad ')}${q < L.length - 1 ? ',\\\\[4pt]' : ''}`;
+  }).join('\n');
+}
+/* "where" definitions: inline when short, otherwise a display with broken lines */
+function latexWhere(W, budget = 56){
+  if (!W.length) return '';
+  if (W.every(w => texW(w) <= budget * 0.8)) return `\nwhere $${W.join('$, $')}$.`;
+  const rows = W.map((w, q) => { const at = w.indexOf('='), l = w.slice(0, at), r = w.slice(at + 1);
+    return `${l} &= ${packLines(topSplit(r), budget).join('\\\\\n  &\\quad ')}${q < W.length - 1 ? ',\\\\[2pt]' : '.'}`; });
+  return `\nwhere\n\\begin{equation*}\n\\begin{aligned}\n${rows.join('\n')}\n\\end{aligned}\n\\end{equation*}`;
+}
+function latexModel(){
+  if (!LAST) return '';
+  const blk = (L, where, label) => {
+    const body = latexAligned(L), rows = body.split('\\\\').length;
+    if (rows <= 12) return `\\begin{equation}${label ? `\\label{${label}}` : ''}\n\\begin{aligned}\n${body}\n\\end{aligned}\n\\end{equation}` + latexWhere(where);
+    // a long system cannot sit in one equation: number each equation and allow page breaks
+    return `% Long system: put \\allowdisplaybreaks in the preamble so it can break across pages.\n\\begin{subequations}${label ? `\\label{${label}}` : ''}\n\\begin{align}\n${body.replace(/\\\\\n  &\\quad /g, '\\nonumber\\\\\n  &\\quad ')}\n\\end{align}\n\\end{subequations}` + latexWhere(where);
+  };
+  let out = '% Generated by the predator-prey model builder\n';
+  if (LAST.symShown) out += '% Indexed form\n' + blk(LAST.genL, LAST.whereSym, 'eq:model-general') + '\n\n% Expanded system\n';
+  out += blk(LAST.expL, LAST.where, 'eq:model');
+  if (S.frame === 'pde') out += '\nwith $\\partial_\\nu x_i=\\partial_\\nu y_j=0$ on $\\partial\\Omega$.';
+  return out + '\n';
+}
+const tex2 = s => s.replace(/\\\(/g, '$').replace(/\\\)/g, '$');
+function latexTable(){
+  if (!LAST) return '';
+  const rows = [];
+  LAST.C.V.forEach(v => rows.push(`$${v.sym}$ & ${tex2(v.en)} & ${tex2(v.dom)} & \\\\`));
+  rows.push('\\midrule');
+  LAST.C.P.forEach(p => rows.push(`$${p.sym}$ & ${tex2(p.en)} & ${tex2(p.cen)} & ${tex2(idxText(p.kind, 'en', p.only))} \\\\`));
+  return `\\begin{table}[ht]\n\\centering\\small\n\\begin{tabular}{@{}lp{0.36\\textwidth}p{0.27\\textwidth}p{0.16\\textwidth}@{}}\n\\toprule\nSymbol & Meaning & Constraint & Index \\\\\n\\midrule\n${rows.join('\n')}\n\\bottomrule\n\\end{tabular}\n\\caption{Variables and parameters of model~\\eqref{eq:model}.}\n\\label{tab:model-parameters}\n\\end{table}\n`;
+}
+function bibtex(){ return LAST ? LAST.C.refs.filter(k => REFS[k]).map(k => REFS[k].bib).join('\n\n') + '\n' : ''; }
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toast._h); toast._h = setTimeout(() => t.classList.remove('show'), 1600); }
+function copy(text, what){
+  const done = () => toast(`${what} copied`);
+  const fail = () => { const f = $('fallback'); f.hidden = false; f.value = text; f.focus(); f.select(); toast('Select and copy the text below'); };
+  try { navigator.clipboard.writeText(text).then(done, fail); } catch (e) { fail(); }
+}
+
+/* ------------------------------------------------------------------ controls */
+const IDS = ['fr','refuge','num','harvX','harvY','antiPred'];
+const CHK = ['seasonal','preyComp','habitat','coop','addFood','predAllee','gest','mat','dd','predComp','immX','immY','toxic'];
+function setDis(id, dis){ const el = $(id); el.disabled = dis; const lab = el.closest('label'); if (lab) lab.classList.toggle('disabled', dis); if (dis && el.type === 'checkbox') { el.checked = false; S[id] = false; } }
+/* per prey: Allee only with logistic growth and without fear; fear only with exponential or logistic growth and without Allee */
+const alleeOkFor = c => c.growth === 'logistic' && !c.fear;
+const fearOkFor = c => (c.growth === 'exp' || c.growth === 'logistic') && c.allee === 'none';
+function validate(){
+  S.pg.forEach(c => { if (!alleeOkFor(c)) c.allee = 'none'; if (!fearOkFor(c)) c.fear = false; });
+  if (isLG()) for (let k = 0; k < S.m; k++) S.pdiet[k][k] = false;   // no cannibalism with Leslie-Gower
+  setDis('preyComp', S.n < 2);
+  setDis('predComp', S.m < 2 || isLG());
+  const ivlev = S.fr === 'Ivlev';
+  setDis('habitat', ivlev); setDis('coop', ivlev);
+  const afOk = ['H2','BD','CM'].includes(S.fr);
+  setDis('addFood', !afOk);
+  const hint = ivlev ? 'Habitat complexity and hunting cooperation modify the attack rate a, which the Ivlev response does not have.' : !afOk ? 'Additional food is available with Holling II, Beddington–DeAngelis and Crowley–Martin responses.' : '';
+  $('hFR').textContent = hint; $('hFR').hidden = !hint;
+  const lg = isLG();
+  ['predAllee','gest','dd'].forEach(id => setDis(id, lg));
+  setDis('mat', lg || !S.gest);
+  $('hNum').hidden = !lg;
+  // sync controls
+  IDS.forEach(id => { $(id).value = S[id]; });
+  CHK.forEach(id => { $(id).checked = !!S[id]; });
+  $('n').value = S.n; $('m').value = S.m;
+  $('f' + S.frame.toUpperCase()).checked = true;
+  drawGrowth(); drawDiet(); drawPDiet();
+}
+/* controls are rebuilt only when the number of species changes, so keyboard focus survives a re-render */
+const SUB = '₀₁₂₃₄₅₆₇₈₉';
+const GOPT = [['exp','Exponential (Lotka–Volterra)'],['logistic','Logistic'],['gompertz','Gompertz'],['theta','θ-logistic'],['delayed','Delayed logistic (Hutchinson)']];
+const AOPT = [['none','None'],['strong','Strong (multiplicative)'],['weak','Weak (multiplicative)'],['additive','Additive']];
+const opts = L => L.map(([v, t]) => `<option value="${v}">${t}</option>`).join('');
+function drawGrowth(){
+  const box = $('growthBox');
+  if (box.dataset.n !== String(S.n)) {
+    box.dataset.n = S.n; box.classList.toggle('multi', S.n > 1);
+    box.innerHTML = S.pg.map((_, k) => { const i = k + 1; return `<div class="pcard">`
+      + (S.n > 1 ? `<div class="ph"><span class="chip c-t1">x${SUB[i]}</span>Prey ${i}</div>` : '')
+      + `<label class="row">Growth law <select id="g${i}" data-i="${i}" data-k="growth">${opts(GOPT)}</select></label>`
+      + `<label class="row">Allee effect <select id="al${i}" data-i="${i}" data-k="allee">${opts(AOPT)}</select></label>`
+      + `<label class="chk"><input type="checkbox" id="fe${i}" data-i="${i}" data-k="fear"> <span>Fear of predators</span></label></div>`; }).join('');
+  }
+  let hint = false;
+  S.pg.forEach((c, k) => {
+    const i = k + 1, aOk = alleeOkFor(c), fOk = fearOkFor(c);
+    $(`g${i}`).value = c.growth; $(`al${i}`).value = c.allee; $(`fe${i}`).checked = c.fear;
+    $(`al${i}`).disabled = !aOk; $(`al${i}`).closest('label').classList.toggle('disabled', !aOk);
+    $(`fe${i}`).disabled = !fOk; $(`fe${i}`).closest('label').classList.toggle('disabled', !fOk);
+    if (!aOk || !fOk) hint = true;
+  });
+  $('hGrowth').hidden = !hint;
+  $('gSame').hidden = S.n < 2 || sameGrowth();
+}
+function drawDiet(){
+  const box = $('diet'), key = `${S.n}x${S.m}`;
+  $('dietBox').hidden = S.n === 1 && S.m === 1;
+  if (box.dataset.key !== key) {
+    box.dataset.key = key;
+    box.style.gridTemplateColumns = `repeat(${S.m + 1}, 42px)`;
+    let h = '<span class="cell hdr"></span>';
+    for (let j = 1; j <= S.m; j++) h += `<span class="cell hdr">y${S.m > 1 ? j : ''}</span>`;
+    for (let i = 1; i <= S.n; i++) {
+      h += `<span class="cell hdr">x${S.n > 1 ? i : ''}</span>`;
+      for (let j = 1; j <= S.m; j++) h += `<span class="cell"><input type="checkbox" id="d${i}_${j}" data-i="${i}" data-j="${j}" aria-label="predator ${j} eats prey ${i}"></span>`;
+    }
+    box.innerHTML = h;
+  }
+  for (let i = 1; i <= S.n; i++) for (let j = 1; j <= S.m; j++) $(`d${i}_${j}`).checked = S.diet[i-1][j-1];
+}
+function drawPDiet(){
+  const box = $('pdiet'), lg = isLG();
+  $('pdietBox').hidden = S.m === 1; $('lCanni').hidden = S.m > 1;
+  if (S.m === 1) {
+    $('canni').checked = S.pdiet[0][0]; $('canni').disabled = lg; $('lCanni').classList.toggle('disabled', lg);
+  } else {
+    if (box.dataset.m !== String(S.m)) {
+      box.dataset.m = S.m;
+      box.style.gridTemplateColumns = `repeat(${S.m + 1}, 42px)`;
+      let h = '<span class="cell hdr"></span>';
+      for (let l = 1; l <= S.m; l++) h += `<span class="cell hdr">y${l}</span>`;
+      for (let k = 1; k <= S.m; k++) {
+        h += `<span class="cell hdr">y${k}</span>`;
+        for (let l = 1; l <= S.m; l++) h += `<span class="cell"><input type="checkbox" id="p${k}_${l}" data-k="${k}" data-l="${l}" aria-label="${k === l ? `predator ${k} eats its own kind` : `predator ${l} eats predator ${k}`}"></span>`;
+      }
+      box.innerHTML = h;
+    }
+    for (let k = 1; k <= S.m; k++) for (let l = 1; l <= S.m; l++) { const el = $(`p${k}_${l}`); el.checked = S.pdiet[k-1][l-1]; el.disabled = lg && k === l; }
+  }
+  $('hPdiet').hidden = !lg;
+}
+let timer = null;
+const schedule = () => { clearTimeout(timer); timer = setTimeout(render, 60); };
+const touched = () => { $('preset').value = ''; schedule(); };
+IDS.forEach(id => $(id).addEventListener('change', e => { S[id] = e.target.value; touched(); }));
+CHK.forEach(id => $(id).addEventListener('change', e => { S[id] = e.target.checked; touched(); }));
+$('n').addEventListener('change', e => { S.n = +e.target.value; fullDiet(); resizePG(); touched(); });
+$('m').addEventListener('change', e => { S.m = +e.target.value; fullDiet(); resetPDiet(); touched(); });
+document.querySelectorAll('input[name="frame"]').forEach(r => r.addEventListener('change', e => { S.frame = e.target.value; schedule(); }));
+$('growthBox').addEventListener('change', e => {
+  const t = e.target, k = t.dataset.k; if (!k) return;
+  S.pg[+t.dataset.i - 1][k] = k === 'fear' ? t.checked : t.value; touched();
+});
+$('gSame').addEventListener('click', () => { S.pg = S.pg.map(() => ({ ...S.pg[0] })); touched(); });
+const NOFOOD = 'Each predator needs at least one food source: a prey or another predator';
+$('diet').addEventListener('change', e => {
+  const t = e.target; if (!t.dataset.i) return;
+  const i = +t.dataset.i, j = +t.dataset.j;
+  S.diet[i-1][j-1] = t.checked;
+  if (!hasFood(j)) { S.diet[i-1][j-1] = true; t.checked = true; toast(NOFOOD); }
+  touched();
+});
+$('pdiet').addEventListener('change', e => {
+  const t = e.target; if (!t.dataset.k) return;
+  const k = +t.dataset.k, l = +t.dataset.l;
+  S.pdiet[k-1][l-1] = t.checked;
+  if (!hasFood(l)) { S.pdiet[k-1][l-1] = true; t.checked = true; toast(NOFOOD); }
+  touched();
+});
+$('canni').addEventListener('change', e => { S.pdiet[0][0] = e.target.checked; touched(); });
+$('preset').addEventListener('change', e => { if (e.target.value) { applyPreset(e.target.value); schedule(); } });
+$('cpModel').addEventListener('click', () => copy(latexModel(), 'LaTeX model'));
+$('cpTable').addEventListener('click', () => copy(latexTable(), 'LaTeX table'));
+$('cpBib').addEventListener('click', () => copy(bibtex(), 'BibTeX'));
+$('version').textContent = 'v' + VERSION;
+render();
+</script>
+<script async src="mathjax/tex-svg-full.js"></script>
+
+</body>
+</html>

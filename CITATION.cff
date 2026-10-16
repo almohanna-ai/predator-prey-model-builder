@@ -1,0 +1,30 @@
+# Citation metadata for GitHub and Zenodo.
+cff-version: 1.2.0
+message: "If you use this software, please cite the review and the archived version of the software."
+title: "Predator–Prey Model Builder"
+version: "1.0.0"
+date-released: "2026-10-16"
+license: MIT
+type: software
+authors:
+  - family-names: "Ghazi Al-Mohanna"
+    given-names: "Salam M."
+repository-code: "https://github.com/almohanna-ai/predator-prey-model-builder"
+url: "https://almohanna-ai.github.io/predator-prey-model-builder/"
+abstract: >-
+  A browser-based tool that assembles predator–prey models from biological extensions of the
+  Lotka–Volterra equations and exports the equations, a parameter table with admissible ranges,
+  and verified references in LaTeX.
+keywords:
+  - predator-prey model
+  - Lotka-Volterra
+  - functional response
+  - model building
+  - mathematical biology
+preferred-citation:
+  type: article
+  title: "Where mechanisms enter the Lotka–Volterra equations: a structured review of predator–prey extensions, their parameter constraints, and a model builder"
+  authors:
+    - family-names: "Ghazi Al-Mohanna"
+      given-names: "Salam M."
+  year: 2026

@@ -630,12 +630,12 @@ function collect(){
   }
   if (setOf(c => c.growth === 'exp').length) ref('lotka1925', 'volterra1926');
   if (setOf(c => c.growth === 'logistic').length) ref('verhulst1838');
-  if (setOf(c => c.growth === 'gompertz').length) { ref('gompertz1825'); note(R`Gompertz growth: the per-capita rate \(r\ln(K/x)\) is unbounded as \(x\to 0^{+}\).`, R`نمو Gompertz: المعدل الفردي \(r\ln(K/x)\) غير محدود عند \(x\to 0^{+}\).`); }
+  if (setOf(c => c.growth === 'gompertz').length) { ref('gompertz1825'); note(R`Gompertz growth: the per-capita rate \(r\ln(K/x)\) is unbounded as \(x\to 0^{+}\). The growth term is not Lipschitz at \(x=0\), but solutions are unique (Osgood criterion): \(x=0\) is neither reached nor left in finite time.`, R`نمو Gompertz: المعدل الفردي \(r\ln(K/x)\) غير محدود عند \(x\to 0^{+}\). حد النمو غير ليبشيتزي عند \(x=0\) لكن الحلول وحيدة (معيار Osgood): لا يُبلغ \(x=0\) ولا يُغادر في زمن منتهٍ.`); }
   const thS = setOf(c => c.growth === 'theta');
   if (thS.length) { addS(thS, `\\theta${i}`, 'i', 'Shape exponent of density dependence', 'أس شكل الاعتماد على الكثافة', `\\(\\theta${i}>0\\) (\\(\\theta${i}=1\\): logistic)`, `\\(\\theta${i}>0\\) (\\(\\theta${i}=1\\): لوجستي)`, T1); ref('gilpin1973'); }
   const dlS = setOf(c => c.growth === 'delayed');
   if (dlS.length) { addS(dlS, `\\tau^{x}${i}`, 'i', `Delay in the self-limitation of ${prey.en}`, `تأخير التنظيم الذاتي ${prey.arL}`, `\\(\\tau^{x}${i}\\ge 0\\)`, '', T1);
-    note(R`Delayed logistic (Hutchinson): without predators the equilibrium \(K\) is stable iff \(r\tau^{x}<\pi/2\).`, R`اللوجستي المتأخر: بلا مفترسات يكون التوازن \(K\) مستقراً إذا وفقط إذا \(r\tau^{x}<\pi/2\).`); ref('hutchinson1948'); }
+    note(R`Delayed logistic (Hutchinson): without predators the equilibrium \(K\) is locally asymptotically stable iff \(r\tau^{x}<\pi/2\), and it attracts all positive solutions for \(r\tau^{x}\le\pi/2\) (Wright's conjecture, proved by van den Berg & Jaquette 2018).`, R`اللوجستي المتأخر: بلا مفترسات يكون التوازن \(K\) مستقراً تقاربياً محلياً إذا وفقط إذا \(r\tau^{x}<\pi/2\)، ويجذب كل الحلول الموجبة عندما \(r\tau^{x}\le\pi/2\) (حدسية Wright، أثبتها van den Berg & Jaquette 2018).`); ref('hutchinson1948', 'vandenberg2018'); }
   const stS = setOf(c => c.allee === 'strong'), wkS = setOf(c => c.allee === 'weak'), adS = setOf(c => c.allee === 'additive');
   if (stS.length) {
     addS(stS, `A${i}`, 'i', `Allee threshold of ${prey.en}`, `عتبة Allee ${prey.arL}`, `\\(0<A${i}<K${i}\\) (strong)`, `\\(0<A${i}<K${i}\\) (قوي)`, 'T₁ Allee');
@@ -647,8 +647,8 @@ function collect(){
   }
   if (stS.length || wkS.length) ref('allee1931', 'wang2011allee');
   if (adS.length) {
-    addS(adS, `\\mu${i}`, 'i', 'Strength of the additive Allee effect', 'شدة تأثير Allee الإضافي', `\\(\\mu${i}>0\\); strong if \\(\\mu${i}>r${i}b${i}\\); weak if \\(r${i}b${i}^{2}/K${i}<\\mu${i}<r${i}b${i}\\)`, `\\(\\mu${i}>0\\)؛ قوي إذا \\(\\mu${i}>r${i}b${i}\\)؛ ضعيف إذا \\(r${i}b${i}^{2}/K${i}<\\mu${i}<r${i}b${i}\\)`, 'T₁ Allee');
-    addS(adS, `b${i}`, 'i', 'Prey density at which the Allee effect is half its maximum', 'كثافة الفريسة التي يبلغ عندها الأثر نصف قيمته العظمى', `\\(b${i}>0\\) (weak case needs \\(b${i}<K${i}\\))`, `\\(b${i}>0\\) (الحالة الضعيفة تتطلب \\(b${i}<K${i}\\))`, 'T₁ Allee');
+    addS(adS, `\\mu${i}`, 'i', 'Strength of the additive Allee effect', 'شدة تأثير Allee الإضافي', `\\(\\mu${i}>0\\); strong iff \\(r${i}b${i}<\\mu${i}<r${i}(K${i}+b${i})^{2}/(4K${i})\\); weak iff \\(r${i}b${i}^{2}/K${i}<\\mu${i}<r${i}b${i}\\); larger \\(\\mu${i}\\): no positive growth at any density`, `\\(\\mu${i}>0\\)؛ قوي إذا وفقط إذا \\(r${i}b${i}<\\mu${i}<r${i}(K${i}+b${i})^{2}/(4K${i})\\)؛ ضعيف إذا وفقط إذا \\(r${i}b${i}^{2}/K${i}<\\mu${i}<r${i}b${i}\\)؛ لقيم أكبر: لا نمو موجب عند أي كثافة`, 'T₁ Allee');
+    addS(adS, `b${i}`, 'i', 'Prey density at which the Allee effect is half its maximum', 'كثافة الفريسة التي يبلغ عندها الأثر نصف قيمته العظمى', `\\(b${i}>0\\) (an Allee effect, strong or weak, needs \\(b${i}<K${i}\\))`, `\\(b${i}>0\\) (أثر Allee، قوياً أو ضعيفاً، يتطلب \\(b${i}<K${i}\\))`, 'T₁ Allee');
     ref('dennis1989');
   }
   if (!sameGrowth() && symOK()) note(R`Prey species follow different growth laws; in the indexed form \(\mathcal{G}_i\) denotes the growth term of prey \(i\), defined below the system.`, R`أنواع الفريسة تتبع قوانين نمو مختلفة؛ في الصيغة المفهرسة يرمز \(\mathcal{G}_i\) إلى حد نمو الفريسة \(i\)، وهو معرّف أسفل النظام.`);
@@ -678,10 +678,11 @@ function collect(){
     note('Holling IV: predation falls at high prey density (group defence); there are at most two interior equilibria, and Bogdanov–Takens bifurcations occur (Xiao & Ruan 2001).', 'Holling IV: يقل الافتراس عند الكثافة العالية (دفاع جماعي)؛ يوجد توازنان داخليان على الأكثر، وتحدث تفرعات Bogdanov–Takens (Xiao & Ruan 2001).'); }
   if (S.fr === 'BD' || S.fr === 'CM') add(`c${j}`, 'j', `Interference among individuals of ${pred.en}`, `تداخل أفراد ${pred.ar}`, `\\(c${j}\\ge 0\\) (\\(c${j}=0\\): Holling II)`, `\\(c${j}\\ge 0\\) (\\(c${j}=0\\): Holling II)`, T2);
   if (S.fr === 'HV') add(`\\gamma${j}`, 'j', 'Interference exponent', 'أس التداخل', `\\(0<\\gamma${j}<1\\) (0: Holling II; 1: ratio-dependent)`, `\\(0<\\gamma${j}<1\\) (0: Holling II؛ 1: معتمد على النسبة)`, T2);
-  if (S.fr === 'MI') add(`\\nu${j}`, 'j', 'Mutual interference exponent', 'أس التداخل المتبادل', `\\(0\\le\\nu${j}<1\\) (\\(\\nu${j}=0\\): classical term)`, `\\(0\\le\\nu${j}<1\\)`, T2);
+  if (S.fr === 'MI') { add(`\\nu${j}`, 'j', 'Mutual interference exponent', 'أس التداخل المتبادل', `\\(0\\le\\nu${j}<1\\) (\\(\\nu${j}=0\\): classical term)`, `\\(0\\le\\nu${j}<1\\)`, T2);
+    note(R`Mutual interference: for \(\nu>0\) the term \(y^{1-\nu}\) is not Lipschitz at \(y=0\), and solutions starting with no predators are not unique (predators can appear from none).`, R`التداخل المتبادل: عندما \(\nu>0\) يكون الحد \(y^{1-\nu}\) غير ليبشيتزي عند \(y=0\)، والحلول التي تبدأ بلا مفترسات ليست وحيدة (قد تظهر المفترسات من العدم).`); }
   if (S.fr === 'Herd') { add(`p${i}`, 'i', 'Herd exponent (share of prey exposed at the edge of the herd)', 'أس القطيع (نسبة الفرائس المكشوفة على حافة القطيع)', `\\(0<p${i}<1\\) (\\(p${i}=1/2\\) for a planar herd)`, `\\(0<p${i}<1\\) (\\(p${i}=1/2\\) لقطيع مستوٍ)`, T2);
-    note(R`Herd behaviour: \(x^{p}\) is not Lipschitz at \(x=0\); uniqueness fails there and the prey can vanish in finite time.`, R`سلوك القطيع: \(x^{p}\) غير ليبشيتزي عند \(x=0\)؛ تسقط الوحدانية هناك وقد تنقرض الفريسة في زمن منتهٍ.`); }
-  if (S.fr === 'RD') note(R`Ratio dependence: the response is not defined at \((0,0)\). The origin is a higher-order singular point whose neighbourhood can contain parabolic, elliptic and hyperbolic sectors (Xiao & Ruan 2001), and it can be globally attracting, i.e. joint extinction (Kuang & Beretta 1998).`, R`الاستجابة المعتمدة على النسبة غير معرّفة عند \((0,0)\). الأصل نقطة شاذة من رتبة أعلى قد تحيط بها قطاعات مكافئة وإهليلجية وزائدية (Xiao & Ruan 2001)، وقد يكون جاذباً عالمياً أي انقراضاً مشتركاً (Kuang & Beretta 1998).`);
+    note(R`Herd behaviour: \(x^{p}\) is not Lipschitz at \(x=0\). Solutions are still unique forward in time, but the prey can vanish in finite time, so backward uniqueness fails.`, R`سلوك القطيع: \(x^{p}\) غير ليبشيتزي عند \(x=0\). تبقى الحلول وحيدة في الزمن الأمامي، لكن الفريسة قد تنقرض في زمن منتهٍ، فتسقط الوحدانية في الزمن الخلفي.`); }
+  if (S.fr === 'RD') note(R`Ratio dependence: the response is not defined at \((0,0)\); extended by 0 there, the predation term is Lipschitz (solutions are unique) but not differentiable, so linearisation fails at the origin. The origin is a higher-order singular point whose neighbourhood can contain parabolic, elliptic and hyperbolic sectors (Xiao & Ruan 2001), and it can be globally attracting, i.e. joint extinction (Kuang & Beretta 1998).`, R`الاستجابة المعتمدة على النسبة غير معرّفة عند \((0,0)\). الأصل نقطة شاذة من رتبة أعلى قد تحيط بها قطاعات مكافئة وإهليلجية وزائدية (Xiao & Ruan 2001)، وقد يكون جاذباً عالمياً أي انقراضاً مشتركاً (Kuang & Beretta 1998).`);
   if (S.refuge === 'prop') { add(`\\phi${i}`, 'i', `Fraction of ${prey.en} protected in refuges`, `نسبة ${prey.ar} المحمية في الملاجئ`, `\\(0\\le\\phi${i}<1\\)`, '', 'T₂ refuge'); ref('maynardsmith1974', 'gonzalez2003'); }
   if (S.refuge === 'num') { add(`\\xi${i}`, 'i', `Number of ${prey.en} protected in refuges`, `عدد أفراد ${prey.ar} المحمية`, `\\(\\xi${i}\\ge 0\\)`, '', 'T₂ refuge'); ref('maynardsmith1974', 'gonzalez2003');
     note(R`A fixed-number refuge uses \((x-\xi)_{+}\). In the classical Lotka–Volterra model it turns the neutral centre into a stable equilibrium, whereas a fixed-proportion refuge only rescales the attack rate (Maynard Smith 1974); in more realistic models refuges can also destabilise (McNair 1986).`, R`الملجأ العددي يستخدم \((x-\xi)_{+}\). في نموذج Lotka–Volterra الكلاسيكي يحوّل المركز المحايد إلى توازن مستقر، بينما الملجأ النسبي يغيّر مقياس معدل الهجوم فقط (Maynard Smith 1974)؛ وفي نماذج أكثر واقعية قد تزعزع الملاجئ الاستقرار أيضاً (McNair 1986).`); ref('mcnair1986'); }
@@ -711,9 +712,9 @@ function collect(){
     add(`e${ij}`, 'ij', `Conversion efficiency of ${prey.en} into ${pred.en}`, `كفاءة تحويل ${prey.ar} إلى ${pred.ar}`, `\\(e${ij}>0\\); \\(e${ij}<1\\) when densities are biomass or energy`, `\\(e${ij}>0\\)؛ \\(e${ij}<1\\) عندما تُقاس الكثافات كتلةً أو طاقة`, 'T₃');
     add(`m${j}`, 'j', `Natural death rate of ${pred.en}`, `معدل الموت الطبيعي ${pred.arL}`, `\\(m${j}>0\\)`, '', 'T₄');
     if (S.predAllee) { add(`\\psi${j}`, 'j', `Mate-finding scale of ${pred.en}`, `مقياس إيجاد الشريك ${pred.arL}`, `\\(\\psi${j}>0\\)`, '', 'T₃ Allee'); ref('courchamp2008');
-      note(R`Predator Allee effect: at low predator density per-capita gain vanishes, so \(y=0\) becomes locally stable.`, R`Allee في المفترس: عند الكثافة المنخفضة ينعدم الكسب الفردي، فيصبح \(y=0\) مستقراً محلياً.`); }
+      note(R`Predator Allee effect: the gain is \(e\,q(y)\) times the predation term, with \(q=y/(y+\psi)\), while the prey still lose the full predation term. At low predator density per-capita gain vanishes, so \(y=0\) becomes locally stable.`, R`Allee في المفترس: الكسب يساوي \(e\,q(y)\) مضروباً في حد الافتراس، حيث \(q=y/(y+\psi)\)، بينما تخسر الفريسة حد الافتراس كاملاً. عند الكثافة المنخفضة ينعدم الكسب الفردي، فيصبح \(y=0\) مستقراً محلياً.`); }
     if (S.gest) { add(`\\tau${j}`, 'j', `Gestation (or digestion) delay of ${pred.en}`, `تأخير الحمل/الهضم ${pred.arL}`, `\\(\\tau${j}\\ge 0\\)`, '', 'T₃ delay'); ref('cushing1977book', 'kuang1993');
-      note(R`Delay system: initial data are functions on \([-\tau,0]\); expect stability switches through Hopf bifurcations at critical delays. With delay-dependent survival (maturation) a common sequence is stable, unstable, stable again as the delay grows (Beretta & Kuang 2002).`, R`نظام تأخيري: الشروط الابتدائية دوال على \([-\tau,0]\)؛ تُتوقع تبدلات استقرار عبر Hopf عند تأخيرات حرجة. ومع بقاء معتمد على التأخير (النضج) يشيع تسلسل: مستقر ثم غير مستقر ثم مستقر مع زيادة التأخير (Beretta & Kuang 2002).`); ref('beretta2002'); }
+      note(R`Delay system: the gain at time \(t\) is the predation at time \(t-\tau\) (times juvenile survival, if chosen); initial data are functions on \([-\tau,0]\); expect stability switches through Hopf bifurcations at critical delays. With delay-dependent survival (maturation) a common sequence is stable, unstable, stable again as the delay grows (Beretta & Kuang 2002).`, R`نظام تأخيري: الشروط الابتدائية دوال على \([-\tau,0]\)؛ تُتوقع تبدلات استقرار عبر Hopf عند تأخيرات حرجة. ومع بقاء معتمد على التأخير (النضج) يشيع تسلسل: مستقر ثم غير مستقر ثم مستقر مع زيادة التأخير (Beretta & Kuang 2002).`); ref('beretta2002'); }
     if (S.mat) { add(`\\delta^{J}${j}`, 'j', `Juvenile death rate of ${pred.en} during maturation`, `معدل موت صغار ${pred.ar} خلال النضج`, `\\(\\delta^{J}${j}\\ge 0\\)`, '', 'T₃ delay'); ref('gourley2004'); }
     if (S.dd) { add(`\\delta${j}`, 'j', `Density-dependent mortality of ${pred.en}`, `الموت المعتمد على الكثافة ${pred.arL}`, `\\(\\delta${j}\\ge 0\\)`, '', 'T₄'); ref('bazykin1998'); }
     if (S.predComp && S.m > 1) add(R`\beta_{jj'}`, 'jl', R`Competitive effect of predator \(j'\) on predator \(j\)`, R`أثر تنافس المفترس \(j'\) على المفترس \(j\)`, R`\(\beta_{jj'}\ge 0\)`, '', 'T₄ comp.');
@@ -749,8 +750,8 @@ function collect(){
     if (LT.can.length) {
       const who = many ? LT.can.map(([k]) => yT(k)).join(', ') : 'the predator';
       const whoA = many ? LT.can.map(([k]) => yT(k)).join('، ') : 'المفترس';
-      note(`Cannibalism (${who}): eaten conspecifics are turned into new predators with efficiency below 1, so cannibalism acts as density-dependent mortality; it can stabilise predator–prey oscillations and raise the standing stocks of both prey and predator (Kohlmeier & Ebenhöh 1995).`,
-           `افتراس ذاتي (${whoA}): يتحول الأفراد المأكولون إلى مفترسات جديدة بكفاءة أقل من 1، فيعمل الافتراس الذاتي كموت معتمد على الكثافة؛ وقد يثبّت تذبذبات المفترس والفريسة ويرفع مخزونَي الفريسة والمفترس معاً (Kohlmeier & Ebenhöh 1995).`);
+      note(`Cannibalism (${who}): eaten conspecifics are turned into new predators with efficiency below 1. Individuals of one species are alike in an unstructured model, so numbers are proportional to biomass and mass balance forbids an efficiency above 1 in any units (above 1, a predator without other food would blow up in finite time if there were no handling time). Cannibalism then acts as density-dependent mortality; it can stabilise predator–prey oscillations and raise the standing stocks of both prey and predator (Kohlmeier & Ebenhöh 1995).`,
+           `افتراس ذاتي (${whoA}): يتحول الأفراد المأكولون إلى مفترسات جديدة بكفاءة أقل من 1. أفراد النوع الواحد متماثلون في نموذج غير مُهيكل، فالأعداد تتناسب مع الكتلة، وحفظ الكتلة يمنع كفاءة أكبر من 1 بأي وحدات (فوق 1 ينفجر المفترس بلا غذاء آخر في زمن منتهٍ إن لم يكن هناك زمن معالجة). عندها يعمل الافتراس الذاتي كموت معتمد على الكثافة؛ وقد يثبّت تذبذبات المفترس والفريسة ويرفع مخزونَي الفريسة والمفترس معاً (Kohlmeier & Ebenhöh 1995).`);
       ref('kohlmeier1995');
     }
     if (LT.mut.length) {
@@ -808,18 +809,20 @@ function collect(){
   // framework
   if (S.frame === 'pde') {
     add(`D^{x}${i},\\,D^{y}${j}`, '', 'Diffusion coefficients', 'معاملات الانتشار', `\\(D^{x}${i},D^{y}${j}>0\\)`, '', 'd/dt');
-    note(R`Reaction–diffusion: no-flux boundary conditions \(\partial_{\nu}x=\partial_{\nu}y=0\) on \(\partial\Omega\) and non-negative initial data. Turing patterns need predator self-limitation (e.g. \(\delta y^{2}\), Beddington–DeAngelis or Leslie–Gower) and \(D^{y}/D^{x}\) above a threshold.`, R`انتشار مكاني: شروط حدية بلا تدفق \(\partial_{\nu}x=\partial_{\nu}y=0\) على \(\partial\Omega\) وشروط ابتدائية غير سالبة. أنماط Turing تحتاج تنظيماً ذاتياً للمفترس (مثل \(\delta y^{2}\) أو Beddington–DeAngelis أو Leslie–Gower) ونسبة \(D^{y}/D^{x}\) فوق عتبة.`);
+    note(R`Reaction–diffusion: no-flux boundary conditions \(\partial_{\nu}x=\partial_{\nu}y=0\) on \(\partial\Omega\) and non-negative initial data. For one prey and one predator, an equilibrium that is stable without diffusion becomes Turing unstable iff \(D^{y}J_{11}+D^{x}J_{22}>0\) and \((D^{y}J_{11}+D^{x}J_{22})^{2}>4D^{x}D^{y}\det J\). A prey-dependent predator equation has \(J_{22}=0\) and no Turing patterns; predator self-limitation (\(\delta y^{2}\), Beddington–DeAngelis, Leslie–Gower: \(J_{22}<0\)) needs faster predator diffusion, predator self-enhancement (hunting cooperation: \(J_{22}>0\)) faster prey diffusion.`, R`انتشار مكاني: شروط حدية بلا تدفق \(\partial_{\nu}x=\partial_{\nu}y=0\) على \(\partial\Omega\) وشروط ابتدائية غير سالبة. لفريسة واحدة ومفترس واحد، يصبح التوازن المستقر بلا انتشار غير مستقر بآلية Turing إذا وفقط إذا \(D^{y}J_{11}+D^{x}J_{22}>0\) و\((D^{y}J_{11}+D^{x}J_{22})^{2}>4D^{x}D^{y}\det J\). معادلة المفترس المعتمدة على الفريسة فقط تعطي \(J_{22}=0\) فلا أنماط Turing؛ التنظيم الذاتي للمفترس (\(J_{22}<0\)) يتطلب انتشاراً أسرع للمفترس، والتعزيز الذاتي (التعاون في الصيد: \(J_{22}>0\)) انتشاراً أسرع للفريسة.`);
     ref('skellam1951', 'segel1972');
   }
   if (S.frame === 'sde') {
     add(`\\sigma^{x}${i},\\,\\sigma^{y}${j}`, '', 'Intensities of environmental noise', 'شدة الضجيج البيئي', `\\(\\sigma^{x}${i},\\sigma^{y}${j}\\ge 0\\)`, '', 'd/dt');
-    const sdeE = setOf(c => !c.fear && c.allee === 'none' && ['exp','logistic','theta'].includes(c.growth)), sdeF = setOf(c => c.fear), sdeG = setOf(c => !c.fear && c.allee === 'none' && c.growth === 'gompertz');
-    const pe = [], pa = [];   // checks S26a-d
-    if (sdeE.length) { pe.push(R`persistence needs \(r>(\sigma^{x})^{2}/2\)` + restr(sdeE, 'en')); pa.push(R`البقاء يتطلب \(r>(\sigma^{x})^{2}/2\)` + restr(sdeE, 'ar')); }
-    if (sdeF.length) { pe.push(R`with fear it needs \(r-d>(\sigma^{x})^{2}/2\)` + restr(sdeF, 'en')); pa.push(R`ومع الخوف يتطلب \(r-d>(\sigma^{x})^{2}/2\)` + restr(sdeF, 'ar')); }
-    if (sdeG.length) { pe.push(R`Gompertz prey persist for every \(\sigma^{x}\), since \(\ln x\) is an Ornstein–Uhlenbeck process` + restr(sdeG, 'en')); pa.push(R`وفريسة Gompertz تبقى لكل \(\sigma^{x}\) لأن \(\ln x\) عملية Ornstein–Uhlenbeck` + restr(sdeG, 'ar')); }
-    note('Itô stochastic system: noise is proportional to density, so densities stay positive.' + (pe.length ? ' Prey alone (no predators): ' + pe.join('; ') + '.' : ''),
-         'نظام عشوائي بمعنى إيتو: الضجيج متناسب مع الكثافة، فتبقى الكثافات موجبة.' + (pa.length ? ' الفريسة وحدها (بلا مفترسات): ' + pa.join('؛ ') + '.' : ''));
+    const sdeE = setOf(c => !c.fear && c.allee === 'none' && ['logistic','theta'].includes(c.growth)), sdeX = setOf(c => !c.fear && c.allee === 'none' && c.growth === 'exp'),
+          sdeF = setOf(c => c.fear), sdeG = setOf(c => !c.fear && c.allee === 'none' && c.growth === 'gompertz');
+    const pe = [], pa = [];   // checks S26a-g
+    if (sdeE.length) { pe.push(R`a stationary distribution exists iff \(r>(\sigma^{x})^{2}/2\), and the prey goes extinct almost surely if \(r<(\sigma^{x})^{2}/2\)` + restr(sdeE, 'en')); pa.push(R`يوجد توزيع مستقر إذا وفقط إذا \(r>(\sigma^{x})^{2}/2\)، وتنقرض الفريسة شبه مؤكداً إذا \(r<(\sigma^{x})^{2}/2\)` + restr(sdeE, 'ar')); }
+    if (sdeF.length) { pe.push(R`with fear the condition is \(r-d>(\sigma^{x})^{2}/2\)` + restr(sdeF, 'en')); pa.push(R`ومع الخوف يصبح الشرط \(r-d>(\sigma^{x})^{2}/2\)` + restr(sdeF, 'ar')); }
+    if (sdeG.length) { pe.push(R`Gompertz prey have a lognormal stationary distribution for every \(\sigma^{x}\), since \(\ln x\) is an Ornstein–Uhlenbeck process` + restr(sdeG, 'en')); pa.push(R`ولفريسة Gompertz توزيع مستقر لوغاريتمي-طبيعي لكل \(\sigma^{x}\) لأن \(\ln x\) عملية Ornstein–Uhlenbeck` + restr(sdeG, 'ar')); }
+    if (sdeX.length) { pe.push(R`exponential prey have no stationary distribution: they grow without bound if \(r>(\sigma^{x})^{2}/2\) and go extinct if \(r<(\sigma^{x})^{2}/2\)` + restr(sdeX, 'en')); pa.push(R`والفريسة الأسية بلا توزيع مستقر: تنمو بلا حد إذا \(r>(\sigma^{x})^{2}/2\) وتنقرض إذا \(r<(\sigma^{x})^{2}/2\)` + restr(sdeX, 'ar')); }
+    note('Itô stochastic system: noise is proportional to density, so densities stay positive.' + (pe.length ? ' Prey alone (no predators, no harvesting): ' + pe.join('; ') + '.' : ''),
+         'نظام عشوائي بمعنى إيتو: الضجيج متناسب مع الكثافة، فتبقى الكثافات موجبة.' + (pa.length ? ' الفريسة وحدها (بلا مفترسات ولا حصاد): ' + pa.join('؛ ') + '.' : ''));
     ref('rudnicki2003');
   }
   if (Array.from({length:S.m}, (_, k) => k + 1).some(j => dietOf(j).length > 1)) ref('holt1977');   // shared predator: apparent competition
@@ -1111,11 +1114,13 @@ $('growthBox').addEventListener('change', e => {
 });
 $('gSame').addEventListener('click', () => { S.pg = S.pg.map(() => ({ ...S.pg[0] })); touched(); });
 const NOFOOD = 'Each predator needs at least one food source: a prey or another predator';
+const NOPREY = 'At least one predator must eat a prey, otherwise the model has no predator–prey link';
+const anyPreyLink = () => S.diet.some(row => row.some(Boolean));
 $('diet').addEventListener('change', e => {
   const t = e.target; if (!t.dataset.i) return;
   const i = +t.dataset.i, j = +t.dataset.j;
   S.diet[i-1][j-1] = t.checked;
-  if (!hasFood(j)) { S.diet[i-1][j-1] = true; t.checked = true; toast(NOFOOD); }
+  if (!hasFood(j) || !anyPreyLink()) { const msg = hasFood(j) ? NOPREY : NOFOOD; S.diet[i-1][j-1] = true; t.checked = true; toast(msg); }
   touched();
 });
 $('pdiet').addEventListener('change', e => {

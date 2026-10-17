@@ -1,57 +1,74 @@
-S1    PASS  theta-logistic with theta=1 is the logistic law
-S2a   PASS  Multiplicative Allee: g(0) = -rA/K, so the origin is locally stable (strong Allee) iff A>0
-S2b   PASS  Multiplicative Allee: g'(0) = r(K+A)/K^2 > 0 iff A > -K
-S2c   PASS  Multiplicative Allee: positive zeros of g are A and K, so a threshold below K needs 0<A<K   [roots=[A, K]]
-S2d   PASS  Weak Allee (g(0)>=0 and increasing at 0) <=> -K < A <= 0; A <= -K removes the effect (g decreasing at 0)
-S3a   PASS  Additive Allee: strong (g(0)<0) iff mu > r b
-S3b   PASS  Additive Allee: g'(0) > 0 iff mu > r b^2/K
-S3c   PASS  Additive Allee: the weak range r b^2/K < mu < r b is non-empty iff b < K
-S4    PASS  Fear model, prey alone: low-density growth rate is r-d and the equilibrium (r-d)/c^x is positive iff r>d
-S5    PASS  Seasonal forcing: min_t r(1+eps sin wt) = r(1-eps) > 0 iff eps < 1
-S6    PASS  Delayed logistic: roots cross the imaginary axis first at r tau = pi/2 with Re(dlambda/dtau) > 0, so K is stable iff r tau < pi/2   [Re dlambda/dtau = 4*r**2/(4 + pi**2)]
-S7    PASS  Gompertz: per-capita rate r ln(K/x) -> +infinity as x -> 0+
-S8a   PASS  Herd: d/dx x^p -> infinity at 0 for 0<p<1 (not Lipschitz)
-S8b   PASS  Herd: d/dt x^(1-p) -> -(1-p) a y < 0 as x -> 0, so with y bounded below prey reach 0 in finite time
-S8c   PASS  Herd: for a planar (disc) herd the edge length scales as area^(1/2), so p = 1/2
-S9    PASS  Holling II: intake a x/(1+a h x) -> 1/h as x -> infinity
-S10a  PASS  Holling IV: the response peaks at x = sqrt(G), independent of a and h   [[sqrt(G)]]
-S10b  PASS  Holling IV with a proportional refuge peaks at x = sqrt(G)/(1-phi)   [[sqrt(G)/(1 - phi)]]
-S10c  PASS  Holling IV with a fixed-number refuge peaks at x = xi + sqrt(G)   [[-sqrt(G) + xi, sqrt(G) + xi]]
-S10d  PASS  Holling IV: interior equilibria solve a quadratic in x, so there are at most two
-S11a  PASS  Beddington-DeAngelis and Crowley-Martin reduce to Holling II at c = 0
-S11b  PASS  Hassell-Varley: gamma = 0 gives Holling II, gamma = 1 gives the ratio-dependent form
-S11c  PASS  Mutual interference: y^(1-nu) -> 0 as y -> 0 iff nu < 1 (predation vanishes without predators); nu = 0 is the classical term
-S12   PASS  Shared handling time: the time budget gives intake_i = a_i x_i / (1 + sum_k a_k h_k x_k) (prey or predator items alike)
-S13a  PASS  Mass balance: predation changes total biomass x+y by -(1-e) f y, so predation creates no biomass iff e <= 1
-S13b  PASS  Mutual predation (prey eats predator): x+y changes by -(1-e) a x y - (1-e^x) zeta x y from the two predation links
-S14a  PASS  Cannibalism: gain minus loss of the same link is (e^y - 1) a^y y^2 (/D), a density-dependent loss iff e^y < 1
-S14b  PASS  Cannibalism with e^y > 1 and no other food: y' = k y^2 - m y, k = (e^y-1)a^y, blows up at t* = ln(k y0/(k y0 - m))/m, finite iff y(0) > m/k   [solution m*y0/(k*y0 - (k*y0 - m)*exp(m*t))]
-S15   PASS  Maturation delay: juveniles dying at rate delta^J survive the delay tau with probability exp(-delta^J tau)
-S16   PASS  Predator Allee: d/dy[y/(y+psi) e F y - m y] at y=0 equals -m < 0, so y=0 is locally stable
-S17   PASS  Hunting cooperation: per-capita predator gain increases with predator density (component Allee effect) for w > 0
-S18a  PASS  Leslie-Gower: y/(eta x) is unbounded as x -> 0+ (singular without prey)
-S18b  PASS  Modified Leslie-Gower: y/(eta x + C) stays finite at x = 0 for C > 0
-S18c  PASS  Leslie-Gower: the predator equilibrium is y = eta x (eta = predators supported per unit prey)
-S19a  PASS  Effort harvesting, logistic prey alone: positive equilibrium K(1 - qE/r) exists iff qE < r
-S19b  PASS  Effort harvesting, theta-logistic prey alone: x = K(1 - qE/r)^(1/theta) solves r(1-(x/K)^theta) = qE, and is real and positive iff qE < r
-S20   PASS  Constant yield, logistic prey alone: positive equilibria exist iff H <= rK/4 (the maximum of rx(1-x/K), at x = K/2)
-S21   PASS  Constant yield: at x = 0 the prey equation equals -H < 0, so solutions leave the non-negative orthant unless harvest stops
-S22   PASS  Classical LV with prey immigration I>0: trace = -I/x* < 0 and det > 0 at the interior equilibrium, so it is asymptotically stable
-S23   PASS  Classical LV: interior equilibrium (m/(ea), r/a) and H = eax - m ln x + ay - r ln y is conserved
-S24   PASS  Logistic prey + Holling I: x* = m/(ea), y* = (r/a)(1 - x*/K) > 0 iff m < eaK; dV/dt = -(e r/K)(x-x*)^2 <= 0 (global stability via LaSalle)
-S25a  PASS  Rosenzweig-MacArthur: F1 = F2 = 0 at x* = m/[a(e-mh)], y* = (r/a)(1-x*/K)(1+ahx*)
-S25b  PASS  Rosenzweig-MacArthur: trace J = [2 r a h x*/(K(1+ahx*))] (x_hump - x*), x_hump = (K - 1/(ah))/2   [det = m*r*(K*a*e - K*a*h*m - m)/(K*a*e)]
-S25c  PASS  Rosenzweig-MacArthur: at 400 random admissible parameter sets (exact rationals) trace/(x_hump - x*) > 0 and det > 0, so the equilibrium is stable iff x* > x_hump   [violations: 0]
-S25d0 PASS  Lyapunov-coefficient routine self-test: sign of l1 equals sign of alpha in the planar normal form   [l1 = [-4, 4]]
-S25d  PASS  Rosenzweig-MacArthur: first Lyapunov coefficient l1 < 0 at the Hopf point (supercritical) at 12 random parameter sets, exact arithmetic   [12/12 negative]
-S26a  PASS  Ito, logistic prey alone: d ln x = (r(1 - x/K) - sigma^2/2) dt + sigma dW, low-density drift r - sigma^2/2: persists iff r > sigma^2/2
-S26b  PASS  Ito, theta-logistic and exponential prey: same low-density drift r - sigma^2/2
-S26c  PASS  Ito, Gompertz prey: d ln x has drift r ln K - sigma^2/2 - r ln x (an Ornstein-Uhlenbeck process in ln x), so the prey persists for every sigma
-S26d  PASS  Ito, fear prey without predators: low-density drift r - d - sigma^2/2
-S27a  PASS  Prey-dependent predator equation y(eF(x) - m): J22 = eF - m = 0 at any interior equilibrium
-S27b  PASS  With J22 = 0, stability (J11 + J22 < 0) forces J11 < 0, so Dy J11 + Dx J22 > 0 (needed for Turing) fails for all D > 0
-S27c  PASS  Self-limitation gives J22 < 0 at equilibrium: -delta y* (delta y^2), -e a c x y/(1+ahx+cy)^2 (Beddington-DeAngelis), -s (Leslie-Gower)
-S28   PASS  Ratio-dependent term a x y/(y + a h x) is 0/0 at (0,0) and its x-derivative depends on the direction y = kx (not differentiable there)
-S29a  PASS  Classical LV with a proportional refuge: a(1-phi) replaces a, the first integral is kept, so the centre stays neutral (no stabilisation)
-S29b  PASS  Classical LV with a fixed-number refuge: trace = -r xi/(x* - xi) < 0 and det > 0, so the centre becomes asymptotically stable   [det = r*(a*e*xi + m)]
-S30   PASS  Quasi-positivity: every prey term listed is >= 0 at x = 0 (each has a factor x, or is immigration); constant yield (-H) is the only exception (S21)   [logistic + Allee, additive Allee, fear, Holling II loss, number refuge loss (x<xi), herd loss, effort harvest, MM harvest, immigration, prey eats predator]
+S1    PASS  [symbolic] theta-logistic with theta=1 is the logistic law
+S2a   PASS  [symbolic] Multiplicative Allee: g(0) = -rA/K, so the origin is locally stable (strong Allee) iff A>0
+S2b   PASS  [symbolic] Multiplicative Allee: g'(0) = r(K+A)/K^2 > 0 iff A > -K
+S2c   PASS  [symbolic] Multiplicative Allee: positive zeros of g are A and K, so a threshold below K needs 0<A<K   [roots=[A, K]]
+S2d   PASS  [symbolic] Weak Allee (g(0)>=0 and increasing at 0) <=> -K < A <= 0; A <= -K removes the effect (g decreasing at 0)
+S3a   PASS  [symbolic] Additive Allee: g(0) = r - mu/b, so g(0) < 0 iff mu > r b
+S3b   PASS  [symbolic] Additive Allee: g'(0) > 0 iff mu > r b^2/K
+S3c   PASS  [symbolic] Additive Allee: the weak range r b^2/K < mu <= r b is non-empty iff b < K
+S3d   PASS  [symbolic] Additive Allee: g > 0 iff r(1-x/K)(x+b) > mu, whose maximum over x >= 0 is r(K+b)^2/(4K) at x = (K-b)/2 if b < K and r b at x = 0 if b >= K; so a strong Allee effect (g(0) < 0 with a positive growth range) holds iff b < K and r b < mu < r(K+b)^2/(4K)
+S3e   PASS  [instance] Additive Allee counterexample to "strong iff mu > r b": r = K = b = 1, mu = 2 gives g(x) = -(x^2+1)/(x+1) < 0 for all x >= 0 (extinction, no threshold)   [g = -(x**2 + 1)/(x + 1)]
+S4    PASS  [symbolic] Fear model, prey alone: low-density growth rate is r-d and the equilibrium (r-d)/c^x is positive iff r>d
+S5    PASS  [symbolic] Seasonal forcing: min_t r(1+eps sin wt) = r(1-eps) > 0 iff eps < 1
+S6    PASS  [symbolic] Delayed logistic: imaginary roots i w need w = r and sin(r tau) = 1, the first at r tau = pi/2, crossing with Re(dlambda/dtau) > 0; the root at tau = 0 is -r, so K is locally asymptotically stable iff r tau < pi/2 (at r tau = pi/2 linearisation is inconclusive)   [Re dlambda/dtau = 4*r**2/(4 + pi**2)]
+S6b   PASS  [symbolic] Delayed logistic: x(t) = K(1 + z(t/tau)) turns it into Wright's equation z'(s) = -alpha z(s-1)(1 + z(s)) with alpha = r tau
+S7    PASS  [symbolic] Gompertz: per-capita rate r ln(K/x) -> +infinity as x -> 0+
+S7b   PASS  [symbolic] Gompertz: r x ln(K/x) is not Lipschitz at 0 (slope r ln(K/x) - r -> infinity) but the integral of dx/(r x ln(K/x)) diverges at 0+, so x = 0 is reached and left only in infinite time and solutions are unique (Osgood criterion)
+S8a   PASS  [symbolic] Herd: d/dx x^p -> infinity at 0 for 0<p<1 (not Lipschitz)
+S8b   PASS  [symbolic] Herd: d/dt x^(1-p) -> -(1-p) a y < 0 as x -> 0, so with y bounded below prey reach 0 in finite time
+S8c   PASS  [symbolic] Herd: for a planar (disc) herd the edge length scales as area^(1/2), so p = 1/2
+S8d   PASS  [symbolic] Herd: x' - r x = -r x^2/K - a x^p y <= 0 on x, y >= 0, so x(0) = 0 forces x(t) = 0 for t > 0 (forward uniqueness); with S8b, solutions reaching 0 in finite time make backward uniqueness fail
+S9    PASS  [symbolic] Holling II: intake a x/(1+a h x) -> 1/h as x -> infinity
+S10a  PASS  [symbolic] Holling IV: the response peaks at x = sqrt(G), independent of a and h   [[sqrt(G)]]
+S10b  PASS  [symbolic] Holling IV with a proportional refuge peaks at x = sqrt(G)/(1-phi)   [[sqrt(G)/(1 - phi)]]
+S10c  PASS  [symbolic] Holling IV with a fixed-number refuge peaks at x = xi + sqrt(G)   [[-sqrt(G) + xi, sqrt(G) + xi]]
+S10d  PASS  [symbolic] Holling IV: interior equilibria solve a quadratic in x, so there are at most two
+S11a  PASS  [symbolic] Beddington-DeAngelis and Crowley-Martin reduce to Holling II at c = 0
+S11b  PASS  [symbolic] Hassell-Varley: gamma = 0 gives Holling II, gamma = 1 gives the ratio-dependent form
+S11c  PASS  [symbolic] Mutual interference: y^(1-nu) -> 0 as y -> 0 iff nu < 1 (predation vanishes without predators); nu = 0 is the classical term
+S11d  PASS  [symbolic] Mutual interference, 0 < nu < 1: with prey density fixed, y' = k y^(1-nu) - m y has y = 0 and y = [(k/m)(1 - exp(-nu m t))]^(1/nu) > 0 from y(0) = 0: forward non-uniqueness (predators can appear from none)
+S12   PASS  [symbolic] Shared handling time: the time budget gives intake_i = a_i x_i / (1 + sum_k a_k h_k x_k) (prey or predator items alike)
+S12b  PASS  [symbolic] Additional food A: the time budget gives prey loss a x/(1 + a h x + a_A h_A A) and predator gain (e a x + e_A a_A A)/(1 + a h x + a_A h_A A); with e_A = e, eta = a_A/a, alpha = h_A/h this is (e/h)(x + eta A)/(1/(ah) + x + alpha eta A)
+S12c  PASS  [symbolic] Additional food: without prey the predator grows at per-capita rate e_A a_A A/(1 + a_A h_A A) - m, so it persists on the additional food alone iff e_A a_A A > m (1 + a_A h_A A)
+S13a  PASS  [symbolic] Mass balance: predation changes total biomass x+y by -(1-e) f y, so predation creates no biomass iff e <= 1
+S13b  PASS  [symbolic] Mutual predation (prey eats predator): x+y changes by -(1-e) a x y - (1-e^x) zeta x y from the two predation links
+S14a  PASS  [symbolic] Cannibalism: gain minus loss of the same link is (e^y - 1) a^y y^2 (/D); by S13a (numbers proportional to biomass in an unstructured model) e^y <= 1, and for e^y < 1 the link is a density-dependent loss
+S14b  PASS  [symbolic] Cannibalism with e^y > 1, no other food and no handling time (h = 0): y' = k y^2 - m y, k = (e^y-1)a^y, blows up at t* = ln(k y0/(k y0 - m))/m, finite iff y(0) > m/k   [solution m*y0/(k*y0 - (k*y0 - m)*exp(m*t))]
+S14c  PASS  [symbolic] Cannibalism with handling time h > 0 and e^y > 1: y' - ((e^y-1)/h - m) y = -(e^y-1) y/(h(1 + a^y h y)) <= 0, so y grows at most exponentially and does not blow up in finite time
+S15   PASS  [symbolic] Maturation delay: juveniles dying at rate delta^J survive the delay tau with probability exp(-delta^J tau)
+S16   PASS  [symbolic] Predator Allee: d/dy[y/(y+psi) e F y - m y] at y=0 equals -m < 0, so y=0 is locally stable
+S17   PASS  [symbolic] Hunting cooperation: per-capita predator gain increases with predator density (component Allee effect) for w > 0
+S18a  PASS  [symbolic] Leslie-Gower: y/(eta x) is unbounded as x -> 0+ (singular without prey)
+S18b  PASS  [symbolic] Modified Leslie-Gower: y/(eta x + C) stays finite at x = 0 for C > 0
+S18c  PASS  [symbolic] Leslie-Gower: the predator equilibrium is y = eta x (eta = predators supported per unit prey)
+S19a  PASS  [symbolic] Effort harvesting, logistic prey alone: positive equilibrium K(1 - qE/r) exists iff qE < r
+S19b  PASS  [symbolic] Effort harvesting, theta-logistic prey alone: x = K(1 - qE/r)^(1/theta) solves r(1-(x/K)^theta) = qE, and is real and positive iff qE < r
+S20   PASS  [symbolic] Constant yield, logistic prey alone: positive equilibria exist iff H <= rK/4 (the maximum of rx(1-x/K), at x = K/2)
+S21   PASS  [symbolic] Constant yield: at x = 0 the prey equation equals -H < 0, so solutions leave the non-negative orthant unless harvest stops
+S22   PASS  [symbolic] Classical LV with prey immigration I>0: trace = -I/x* < 0 and det > 0 at the interior equilibrium, so it is asymptotically stable
+S23   PASS  [symbolic] Classical LV: interior equilibrium (m/(ea), r/a) and H = eax - m ln x + ay - r ln y is conserved
+S24   PASS  [symbolic] Logistic prey + Holling I: x* = m/(ea), y* = (r/a)(1 - x*/K) > 0 iff m < eaK; dV/dt = -(e r/K)(x-x*)^2 <= 0 (global stability via LaSalle)
+S25a  PASS  [symbolic] Rosenzweig-MacArthur: F1 = F2 = 0 at x* = m/[a(e-mh)], y* = (r/a)(1-x*/K)(1+ahx*)
+S25b  PASS  [symbolic] Rosenzweig-MacArthur: trace J = [2 r a h x*/(K(1+ahx*))] (x_hump - x*), x_hump = (K - 1/(ah))/2   [det = m*r*(K*a*e - K*a*h*m - m)/(K*a*e)]
+S25c  PASS  [symbolic] Rosenzweig-MacArthur: det J = m r [K a (e - m h) - m]/(K a e), positive iff x* < K; with S25b (the factor multiplying x_hump - x* is positive) the interior equilibrium, when it exists (x* < K), is stable iff x* > x_hump   [det = m*r*(K*a*e - K*a*h*m - m)/(K*a*e)]
+S25d0 PASS  [self-test] Lyapunov-coefficient routines self-test: in the planar normal form with cubic coefficient alpha, l1 (Kuznetsov) has the sign of alpha and the Guckenheimer-Holmes coefficient a equals alpha   [l1 = [-4, 4]]
+S25d  PASS  [symbolic] Rosenzweig-MacArthur: at the Hopf point x* = x_hump, 16 w^2 l1 = -4 beta s/((1+s)^2 (1+2s)^2) < 0 for all parameters (s = a h x*, beta = e/(r h)): the Hopf bifurcation is always supercritical   [16 w^2 l1 = -4*beta*s/((s + 1)**2*(2*s + 1)**2)]
+S25e  PASS  [sampled] Rosenzweig-MacArthur: independent cross-check of S25d with the Kuznetsov formula in the original variables, l1 < 0 at 12 random Hopf points, exact arithmetic   [12/12 negative]
+S26a  PASS  [symbolic] Ito, logistic prey alone: p(x) ~ x^(2r/sigma^2 - 2) exp(-2 r x/(K sigma^2)) has zero probability flux, and x^c is integrable on (0,1) iff c > -1, i.e. iff r > sigma^2/2: a stationary density (gamma) exists iff r > sigma^2/2
+S26b  PASS  [symbolic] Ito, theta-logistic and exponential prey: same low-density drift r - sigma^2/2
+S26c  PASS  [symbolic] Ito, Gompertz prey: d ln x has drift r ln K - sigma^2/2 - r ln x (an Ornstein-Uhlenbeck process in ln x); the lognormal density with mean ln K - sigma^2/(2r) and variance sigma^2/(2r) of ln x has zero flux, so a stationary density exists for every sigma
+S26d  PASS  [symbolic] Ito, fear prey without predators: low-density drift r - d - sigma^2/2
+S26e  PASS  [symbolic] Ito, logistic prey alone: d ln x <= (r - sigma^2/2) dt + sigma dW, so for r < sigma^2/2, ln x(t) <= ln x(0) + (r - sigma^2/2) t + sigma W(t) -> -infinity almost surely (W(t)/t -> 0): extinction; the same bound holds for theta-logistic prey and, with r - d, for fear prey
+S26f  PASS  [symbolic] Ito, theta-logistic and fear prey alone: zero-flux densities x^(2r/sigma^2 - 2) exp(-2r(x/K)^theta/(theta sigma^2)) and x^(2(r-d)/sigma^2 - 2) exp(-2 c x/sigma^2); integrable at 0 (S26a) iff r > sigma^2/2, resp. r - d > sigma^2/2
+S26g  PASS  [symbolic] Ito, logistic prey harvested at effort E: r x(1 - x/K) - q E x is the fear form with (r, d, c) = (r, qE, r/K), so a stationary density exists iff r - qE > sigma^2/2 (S26f), stricter than the deterministic condition qE < r (S19a)
+S27a  PASS  [symbolic] Prey-dependent predator equation y(eF(x) - m): J22 = eF - m = 0 at any interior equilibrium
+S27b  PASS  [symbolic] With J22 = 0, stability (J11 + J22 < 0) forces J11 < 0, so Dy J11 + Dx J22 > 0 (needed for Turing) fails for all D > 0
+S27c  PASS  [symbolic] Self-limitation gives J22 < 0 at equilibrium: -delta y* (delta y^2), -e a c x y/(1+ahx+cy)^2 (Beddington-DeAngelis), -s (Leslie-Gower)
+S27d  PASS  [symbolic] Turing conditions: det(J - k^2 D) = Dx Dy k^4 - (Dy J11 + Dx J22) k^2 + det J, minimal at k^2 = (Dy J11 + Dx J22)/(2 Dx Dy) with value det J - (Dy J11 + Dx J22)^2/(4 Dx Dy); with tr J < 0, a stable equilibrium is destabilised by diffusion iff Dy J11 + Dx J22 > 0 and (Dy J11 + Dx J22)^2 > 4 Dx Dy det J
+S27e  PASS  [symbolic] Hunting cooperation with a linear response, y(e(a + w y)x - m): J22 = e w x* y* > 0 at an interior equilibrium (predator self-enhancement)
+S27f  PASS  [instance] Turing example with cooperation: x' = 4x(1 - x/2) - (1+y)xy, y' = (1/2)(1+y)xy - y at (1,1): J = [[-2,-3],[1,1/2]], tr = -3/2, det = 2; with Dx = 100, Dy = 1, Dy J11 + Dx J22 = 48 > 0 and 48^2 - 4*100*2 = 1504 > 0, so diffusion destabilises the equilibrium   [J = [[-2, -3], [1, 1/2]]]
+S28   PASS  [symbolic] Ratio-dependent term a x y/(y + a h x) is 0/0 at (0,0) and its x-derivative depends on the direction y = kx (not differentiable there)
+S28b  PASS  [symbolic] Ratio-dependent term: d/dx = a (y/(y+ahx))^2 <= a and d/dy = (1/h)(ahx/(y+ahx))^2 <= 1/h on the open quadrant, and 0 <= f <= min(a x, y/h); extended by f(0,0) = 0 it is continuous and globally Lipschitz on the closed quadrant (convex), though not differentiable at 0 (S28)
+S29a  PASS  [symbolic] Classical LV with a proportional refuge: a(1-phi) replaces a, the first integral is kept, so the centre stays neutral (no stabilisation)
+S29b  PASS  [symbolic] Classical LV with a fixed-number refuge: trace = -r xi/(x* - xi) < 0 and det > 0, so the centre becomes asymptotically stable   [det = r*(a*e*xi + m)]
+S30   PASS  [symbolic] Quasi-positivity: every prey term listed is >= 0 at x = 0 (each has a factor x, or is immigration); constant yield (-H) is the only exception (S21)   [logistic + Allee, additive Allee, fear, Holling II loss, number refuge loss (x<xi), herd loss, effort harvest, MM harvest, immigration, prey eats predator]

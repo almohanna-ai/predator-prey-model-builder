@@ -526,6 +526,189 @@ qp = all(sp.limit(v, x, 0, '+') >= 0 for v in xi_v.values())
 check('S30', 'Quasi-positivity: every prey term listed is >= 0 at x = 0 (each has a factor x, or is immigration); constant yield (-H) is the only exception (S21)',
       qp, ', '.join(xi_v))
 
+# ---------------------------------------------------------------- S31 hunting cooperation against interference
+Aw = a + w*y                                    # attack rate with hunting cooperation
+D2 = 1 + Aw*h*x
+check('S31a', 'Hunting cooperation, one food item: the per-capita gain increases with y for Holling I, II, III, IV and herd responses: '
+      'd/dy[(a + w y)x] = w x, d/dy[(a + w y)x/(1 + (a + w y)h x)] = w x/D^2, d/dy[(a + w y)x^2/(1 + (a + w y)h x^2)] = w x^2/D^2, '
+      'd/dy[(a + w y)x/(1 + (a + w y)h x + x^2/G)] = w x(1 + x^2/G)/D^2, d/dy[(a + w y)x^p] = w x^p',
+      is_zero(sp.diff(Aw*x, y) - w*x) and is_zero(sp.diff(Aw*x/D2, y) - w*x/D2**2)
+      and is_zero(sp.diff(Aw*x**2/(1 + Aw*h*x**2), y) - w*x**2/(1 + Aw*h*x**2)**2)
+      and is_zero(sp.diff(Aw*x/(D2 + x**2/G), y) - w*x*(1 + x**2/G)/(D2 + x**2/G)**2) and is_zero(sp.diff(Aw*x**p, y) - w*x**p))
+Dbd = D2 + c*y
+check('S31b', 'Hunting cooperation with Beddington-DeAngelis interference: d/dy[(a + w y)x/(1 + (a + w y)h x + c y)] = x(w - a c)/D^2, '
+      'so the per-capita gain increases with predator density iff w > a c',
+      is_zero(sp.diff(Aw*x/Dbd, y) - x*(w - a*c)/Dbd**2))
+lcm = sp.diff(sp.log(Aw*x/(D2*(1 + c*y))), y)
+check('S31c', 'Hunting cooperation with Crowley-Martin interference: d/dy ln[(a + w y)x/((1 + (a + w y)h x)(1 + c y))] = '
+      'w/[(a + w y)(1 + (a + w y)h x)] - c/(1 + c y); at y = 0 it has the sign of w - a c(1 + a h x), and y times it tends to -1 as y -> oo',
+      is_zero(lcm - (w/(Aw*D2) - c/(1 + c*y))) and is_zero(lcm.subs(y, 0)*a*(1 + a*h*x) - (w - a*c*(1 + a*h*x)))
+      and sp.limit(y*lcm, y, sp.oo) == -1)
+Drd = y + Aw*h*x
+check('S31d', 'Hunting cooperation with ratio dependence: d/dy[(a + w y)x/(y + (a + w y)h x)] = -a x/(y + (a + w y)h x)^2 < 0 for every w',
+      is_zero(sp.diff(Aw*x/Drd, y) + a*x/Drd**2))
+Dhv = y**gam + Aw*h*x
+check('S31e', 'Hunting cooperation with Hassell-Varley or mutual interference: d/dy[(a + w y)x/(y^gamma + (a + w y)h x)] = '
+      'x y^(gamma-1)(w(1 - gamma)y - gamma a)/D^2 and d/dy[(a + w y)x y^(-nu)] = x y^(-nu-1)(w(1 - nu)y - nu a), '
+      'so the per-capita gain increases iff y > gamma a/[w(1 - gamma)], resp. y > nu a/[w(1 - nu)]',
+      is_zero(sp.diff(Aw*x/Dhv, y) - x*y**(gam - 1)*(w*(1 - gam)*y - gam*a)/Dhv**2)
+      and is_zero(sp.diff(Aw*x*y**(-nu), y) - x*y**(-nu - 1)*(w*(1 - nu)*y - nu*a)))
+eF, aF, hF, Lam = sp.symbols('e_F a_F h_F Lambda', **pos)
+def af_ok(xk):
+    Daf = 1 + aF*hF*Lam + Aw*h*xk
+    return is_zero(sp.diff((e*Aw*xk + eF*aF*Lam)/Daf, y) - w*xk*(e*(1 + aF*hF*Lam) - eF*aF*Lam*h)/Daf**2)
+
+
+check('S31f', 'Hunting cooperation with additional food (Holling II and III, one prey): the per-capita gain (e(a + w y)x^k + e_F a_F Lambda)/(1 + a_F h_F Lambda + (a + w y)h x^k) '
+      'has d/dy = w x^k [e(1 + a_F h_F Lambda) - e_F a_F Lambda h]/D^2, so it increases with y iff e(1 + a_F h_F Lambda) > e_F a_F Lambda h',
+      af_ok(x) and af_ok(x**2))
+
+# ---------------------------------------------------------------- S32 immigration and harvest at a low-density threshold
+Ap = sp.Symbol('A', positive=True)
+fa = r*x*(1 - x/K)*(x - Ap)/K + I
+check('S32a', "Strong Allee effect with prey immigration I: f(0) = I > 0 and f'(0) = -rA/K < 0, so x = 0 is not an equilibrium and, for small I, "
+      "a stable equilibrium x(I) with x'(0) = K/(rA) > 0 continues the stable origin (implicit function theorem)",
+      fa.subs(x, 0) == I and is_zero(sp.diff(fa, x).subs(x, 0) + r*Ap/K)
+      and is_zero(-sp.diff(fa, I).subs(x, 0)/sp.diff(fa, x).subs({x: 0, I: 0}) - K/(r*Ap)))
+F_ = sp.Symbol('F', positive=True)                # predation per predator at the current prey density
+gi_ = e*y/(y + psi)*F_*y - m*y
+check('S32b', "Predator Allee effect with predator immigration I or constant-yield harvest H: g(y) = e q(y)F y - m y with q = y/(y + psi) has "
+      "g(0) = 0 and g'(0) = -m; adding I gives a stable equilibrium near I/m (slope 1/m), adding -H gives g <= -H/2 near 0, so y = 0 is reached in finite time",
+      gi_.subs(y, 0) == 0 and is_zero(sp.diff(gi_, y).subs(y, 0) + m)
+      and is_zero(-sp.diff(gi_ + I, I)/sp.diff(gi_ + I, y).subs(y, 0) - 1/m) and (gi_ - H).subs(y, 0) == -H)
+
+# ---------------------------------------------------------------- S33 mutual interference with a predator Allee effect
+mu_ = sp.Symbol('mu', positive=True)               # 1 - nu, with 0 < nu < 1
+gmi = y/(y + psi)*y**mu_                           # q(y) y^(1-nu)
+check('S33', 'Mutual interference with a predator Allee effect: the gain is proportional to y^(2-nu)/(y + psi); its y-derivative tends to 0 as y -> 0+ for 0 < nu < 1, '
+      'so the predator equation is Lipschitz at y = 0 and solutions from y = 0 are unique',
+      sp.limit(sp.diff(gmi, y), y, 0, '+') == 0)
+
+# ---------------------------------------------------------------- S34-S38 entries added after the scoping review (Stage C)
+xs_, us_ = sp.symbols('x u', real=True)
+r_, K_, c_ = sp.symbols('r K c', positive=True)
+g_sm = r_*(K_ - xs_)/(K_ + (r_/c_)*xs_)            # T1.12 per-capita growth (Smith 1963)
+check('S34a', 'Food-limited growth (T1.12): the per-capita rate r(K - x)/(K + (r/c)x) equals r at x = 0 and 0 at x = K, so the prey-only equilibrium stays K',
+      is_zero(g_sm.subs(xs_, 0) - r_) and is_zero(g_sm.subs(xs_, K_)))
+check('S34b', 'Food-limited growth (T1.12): the per-capita rate tends to r(1 - x/K) as c -> oo (logistic limit)',
+      is_zero(sp.limit(g_sm, c_, sp.oo) - r_*(1 - xs_/K_)))
+check('S34c', 'Food-limited growth (T1.12): d/dx of the per-capita rate is -r c K (c + r)/(c K + r x)^2 < 0',
+      is_zero(sp.diff(g_sm, xs_) + r_*c_*K_*(c_ + r_)/(c_*K_ + r_*xs_)**2))
+
+k_, y0_, w_, D_ = sp.symbols('k y_0 w D', positive=True)
+Ybu = y0_/(1 - k_*y0_*t)
+check('S35a', 'Sexual reproduction (T3.7): y = y0/(1 - k y0 t) solves dy/dt = k y^2 and is unbounded as t -> 1/(k y0); by comparison, dy/dt >= k y^2 with k > 0 gives blow-up in finite time',
+      is_zero(sp.diff(Ybu, t) - k_*Ybu**2) and sp.limit(Ybu, t, 1/(k_*y0_), dir='-') == sp.oo)
+gsr = c_ - w_/(xs_ + D_)
+check('S35b', 'Sexual reproduction (T3.7): the per-capita gain c - w/(x + D) vanishes at x = w/c - D and increases with x, so it is positive iff x > w/c - D',
+      is_zero(gsr.subs(xs_, w_/c_ - D_)) and is_zero(sp.diff(gsr, xs_) - w_/(xs_ + D_)**2))
+
+f_, q_ = sp.symbols('f q', positive=True)
+Ffb = [r_*xs_*(1 - xs_/K_ - c_*us_), -f_*us_ + q_*xs_]
+sfb = sp.solve([1 - xs_/K_ - c_*us_, Ffb[1]], [xs_, us_], dict=True)[0]
+xfb = sp.simplify(sfb[xs_])
+Jfb = sp.Matrix(Ffb).jacobian([xs_, us_]).subs(sfb)
+check('S36a', 'Feedback control (M.3) of logistic prey, x\' = r x(1 - x/K - c u), u\' = -f u + q x: the positive equilibrium is x* = K/(1 + c q K/f), u* = q x*/f',
+      is_zero(xfb - K_/(1 + c_*q_*K_/f_)) and is_zero(sfb[us_] - q_*xfb/f_))
+check('S36b', 'Feedback control (M.3): at (x*, u*) trace J = -(r x*/K + f) < 0 and det J = r x*(f/K + c q) > 0, so the equilibrium is locally asymptotically stable',
+      is_zero(Jfb.trace() + r_*xfb/K_ + f_) and is_zero(Jfb.det() - r_*xfb*(f_/K_ + c_*q_)))
+al_, lm_ = sp.symbols('alpha lambda')
+Jg = sp.Matrix(2, 2, sp.symbols('j11 j12 j21 j22'))
+pF = (Jg - lm_*sp.eye(2)).det()
+pG = (al_*Jg + (1 - al_)*sp.eye(2) - (al_*lm_ + 1 - al_)*sp.eye(2)).det()
+check('S36c', 'Hybrid control (M.3), G = alpha F + (1 - alpha) id: the characteristic polynomial of alpha J + (1 - alpha) I at alpha lambda + 1 - alpha is alpha^2 times that of J at lambda, '
+      'so each eigenvalue lambda maps to alpha lambda + 1 - alpha; G(x) - x = alpha(F(x) - x), so the fixed points are kept for alpha != 0',
+      is_zero(sp.expand(pG - al_**2*pF)))
+
+E_, p_, cx_ = sp.symbols('E p c_x', positive=True)
+check('S37', 'Economic profit constraint (M.4), one harvested species: with profit 0 and effort E > 0, 0 = E(p x - c_x) gives the bionomic equilibrium x = c_x/p',
+      sp.solve(sp.Eq(E_*(p_*xs_ - cx_), 0), xs_) == [cx_/p_])
+
+yL_, yR_, xL_, xR_, Cc_, Pp_, cv_, dy_, Kz_ = sp.symbols('y_L y_R x_L x_R C P c_v d_y K_z', positive=True)
+fyR = (cv_*(Cc_*xL_ + Pp_*xR_) - dy_)*yR_
+fyL = (cv_*(Cc_*xR_ + Pp_*xL_) - dy_)*yL_
+fxR = (r_*(1 - (xL_ + xR_)/Kz_) - (Cc_*yL_ + Pp_*yR_))*xR_
+fxL = (r_*(1 - (xL_ + xR_)/Kz_) - (Cc_*yR_ + Pp_*yL_))*xL_
+sym_ = {yL_: y, yR_: y, xL_: x, xR_: x}
+check('S38', 'Lateral dimorphism (z.23, model 1 of Nakajima et al. 2004): with rates symmetric between morphs, the right-hand sides of the two morphs agree on '
+      'x_L = x_R, y_L = y_R, so the symmetric state is invariant',
+      is_zero((fyR - fyL).subs(sym_)) and is_zero((fxR - fxL).subs(sym_)))
+
+# ---------------------------------------------------------------- S39-S41 entries added after the adjudication of the blind check
+ep_, ap_, sp_, bp_ = sp.symbols('e a s beta', positive=True)          # gain exponent p = 1 - s with 0 < p < 1
+ratio_pl = sp.simplify((ep_*x**(1 - sp_)*y)/(ap_*x*y**bp_))
+check('S39', 'Power-law interactions (T2.16): with prey loss a x y^beta and predator gain e x^p y, 0 < p < 1, the ratio gain/loss = '
+      '(e/a) x^(p-1) y^(1-beta) tends to infinity as x -> 0+, so the gain exceeds the prey loss at low prey density',
+      is_zero(ratio_pl - (ep_/ap_)*x**(-sp_)*y**(1 - bp_)) and sp.limit(ratio_pl, x, 0, '+') == sp.oo)
+m1_, m2_, ab_, bb_, dh_ = sp.symbols('m_1 m_2 a b delta', positive=True)
+f_bd = m1_*x/(1 + ab_*x + bb_*y)
+g_mh = m2_*x/(1 + dh_*x**2)
+check('S40', 'Independent numerical response (T3.8): a Monod-Haldane gain m2 x/(1 + delta x^2) over a Beddington-DeAngelis intake '
+      'm1 x/(1 + a x + b y) tends to infinity as y -> oo, so the gain exceeds the intake when predators are dense',
+      sp.limit(g_mh/f_bd, y, sp.oo) == sp.oo)
+Fm_, Tm_, f1_, y0m_, fm_ = sp.symbols('F T f_1 y_0 f', positive=True)
+mu_st = sp.log(Fm_/fm_)/Tm_
+check('S41a', 'Starvation mortality (T4.4): mu(f) = ln(F/f)/T vanishes at the maximum ration f = F, has derivative -1/(T f) < 0 and tends to '
+      'infinity as the ration f -> 0+', is_zero(mu_st.subs(fm_, Fm_)) and is_zero(sp.diff(mu_st, fm_) + 1/(Tm_*fm_))
+      and sp.limit(mu_st, fm_, 0, '+') == sp.oo)
+Yst = y0m_*sp.exp(-t*sp.log(Fm_/f1_)/Tm_)
+check('S41b', 'Starvation mortality (T4.4): at a constant ration f1 (no births), y = y0 exp(-t ln(F/f1)/T) solves dy/dt = -mu(f1) y '
+      'and y(T) = y0 f1/F', is_zero(sp.diff(Yst, t) + mu_st.subs(fm_, f1_)*Yst) and is_zero(Yst.subs(t, Tm_) - y0m_*f1_/Fm_))
+
+# ---------------------------------------------------------------- S20b, S42: statements of the entries table audited on 19 October 2026
+Hc_ = sp.Symbol('H', positive=True)
+xplus = K/2 + sp.sqrt(K**2/4 - Hc_*K/r)
+fy_ = r*x*(1 - x/K) - Hc_
+check('S20b', 'Constant yield, logistic prey alone: for H < rK/4 the larger equilibrium x+ = K/2 + sqrt(K^2/4 - HK/r) satisfies f(x+) = 0 and '
+      "f'(x+) = r(1 - 2x+/K) = -2r sqrt(K^2/4 - HK/r)/K < 0, so it is stable",
+      is_zero(fy_.subs(x, xplus)) and is_zero(sp.diff(fy_, x).subs(x, xplus) + 2*r*sp.sqrt(K**2/4 - Hc_*K/r)/K))
+e_, a_, m_, q2_, E2_ = sp.symbols('e a m q_2 E_2', positive=True)
+xs_h = (m_ + q2_*E2_)/(e_*a_)
+ys_h = r*(1 - xs_h/K)/a_
+check('S42a', 'Predator harvesting (Phi_y.1), logistic prey and linear predation: the interior equilibrium is x* = (m + q2 E2)/(ea), '
+      'y* = r(1 - x*/K)/a, and y* > 0 iff m + q2 E2 < eaK',
+      is_zero((e_*a_*xs_h - m_ - q2_*E2_)) and is_zero((r*(1 - xs_h/K) - a_*ys_h))
+      and sp.simplify(sp.solve(sp.Eq(ys_h, 0), m_)[0] - (e_*a_*K - q2_*E2_)) == 0
+      and sp.diff(ys_h, m_) < 0)
+zeta_ = sp.Symbol('zeta', positive=True)
+gpc = (e_*a_ - zeta_)*x - m_
+check('S42b', 'Anti-predator attack (Phi_y.2): the predator per-capita growth (ea - zeta) x - m is <= -m < 0 for every x >= 0 when zeta >= ea, '
+      'so the predator cannot persist',
+      sp.simplify(gpc.subs(zeta_, e_*a_)) == -m_ and sp.simplify(sp.diff(gpc, zeta_)) == -x)
+r0_, r1_, C0_, x0_ = sp.symbols('r_0 r_1 C_0 x_0', positive=True)
+xt_tox = x0_*sp.exp((r0_ - r1_*C0_)*t)
+check('S42c', 'Toxicant (T1.10), prey alone: x = x0 exp[(r0 - r1 C0) t] solves dx/dt = (r0 - r1 C0) x and tends to 0 as t -> oo when r0 - r1 C0 < 0',
+      is_zero(sp.diff(xt_tox, t) - (r0_ - r1_*C0_)*xt_tox)
+      and sp.limit(xt_tox.subs({r0_: 1, r1_: 2, C0_: 1}), t, sp.oo) == 0 and sp.limit(xt_tox.subs({r0_: 2, r1_: 1, C0_: 1}), t, sp.oo) == sp.oo)
+e1_, e2_, a1_, a2_, mm1_, mm2_ = sp.symbols('e_1 e_2 a_1 a_2 m_1 m_2', positive=True)
+xs1 = mm1_/(e1_*a1_)
+g2_at = e2_*a2_*xs1 - mm2_
+check('S42d', 'Competing predators (z.9), linear responses: at the prey level x* = m1/(e1 a1) that holds predator 1 at equilibrium, '
+      'predator 2 has per-capita growth e2 a2 x* - m2 = e2 a2 [m1/(e1 a1) - m2/(e2 a2)], negative iff its break-even density m2/(e2 a2) is larger',
+      is_zero(g2_at - e2_*a2_*(xs1 - mm2_/(e2_*a2_))))
+c_, eps_, p_ = sp.symbols('c epsilon p', positive=True)
+pdot = c_*p_*(1 - p_) - eps_*p_
+pstar = 1 - eps_/c_
+check('S42e', 'Metapopulation (z.16): p* = 1 - epsilon/c is an equilibrium, positive iff c > epsilon; its linearisation is epsilon - c < 0 there, '
+      'and the linearisation at p = 0 is c - epsilon, so p = 0 is stable iff c < epsilon',
+      is_zero(pdot.subs(p_, pstar)) and is_zero(sp.diff(pdot, p_).subs(p_, pstar) - (eps_ - c_)) and is_zero(sp.diff(pdot, p_).subs(p_, 0) - (c_ - eps_)))
+h_ = sp.Symbol('h', positive=True)
+gain_h2 = e_*a_*x/(1 + a_*h_*x) - m_
+check('S42f', 'Holling II (T2.2): the per-capita predator gain e a x/(1 + a h x) - m increases with x towards e/h - m, so it is negative for all x '
+      'when e/h <= m and the predator cannot persist',
+      is_zero(sp.limit(gain_h2, x, sp.oo) - (e_/h_ - m_)) and is_zero(sp.diff(gain_h2, x) - e_*a_/(1 + a_*h_*x)**2)
+      and is_zero(gain_h2.subs(m_, e_/h_) + e_/(h_*(1 + a_*h_*x))))
+
+# ---------------------------------------------------------------- S43: T2.16 keeps y = 0 invariant (referee report, 20 October 2026)
+ep2_, pp2_, mp2_, dq_, qq_, aa2_, mu2_ = sp.symbols('e p m delta q a mu', positive=True)
+gy_pl = y*(ep2_*x**pp2_ - mp2_ - dq_*y**qq_)             # predator equation of T2.16
+gain_mi = ep2_*aa2_*x*y**(1 - mu2_)                      # predator gain of T2.10 for comparison (0 < mu < 1)
+check('S43', 'Power-law interactions (T2.16): the predator equation y (e x^p - m - delta y^q) vanishes at y = 0 and its y-derivative there '
+      'is e x^p - m (finite), so y = 0 is invariant and solutions from y = 0 are unique; for T2.10 the y-derivative of the gain '
+      'e a x y^(1-mu) is unbounded at y = 0',
+      is_zero(gy_pl.subs(y, 0)) and is_zero(sp.limit(sp.diff(gy_pl, y), y, 0, '+') - (ep2_*x**pp2_ - mp2_))
+      and sp.limit(sp.diff(gain_mi, y).subs(mu2_, sp.Rational(1, 2)), y, 0, '+') == sp.oo)
+
 # ---------------------------------------------------------------- write
 (OUT / 'constraint_checks.json').write_text(json.dumps(RESULTS, indent=1, ensure_ascii=False), encoding='utf-8', newline='\n')
 lines = [f"{R_['id']:5s} {'PASS' if R_['pass'] else 'FAIL'}  [{R_['kind']}] {R_['claim']}" + (f"   [{R_['detail']}]" if R_['detail'] else '')

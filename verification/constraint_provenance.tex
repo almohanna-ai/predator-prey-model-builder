@@ -2,7 +2,7 @@
 \begingroup\small
 \setlength{\LTcapwidth}{\textwidth}
 \begin{longtable}{@{}>{\raggedright\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.46\textwidth}>{\centering\arraybackslash}p{0.06\textwidth}>{\raggedright\arraybackslash}p{0.34\textwidth}@{}}
-\caption{Provenance of the constraints and results stated in this review and in the model builder (all statements except pure definitions; the full table, with definitions, explanations and the corrections made, is Table~\ref{S-tab:provenance-full} in the Supplement). Basis: M, derived here and checked symbolically (check IDs, Supplement Table~\ref{S-tab:symbolic-checks}); C, convention; Q, quoted from the source; A, adapted from the source; D, definition. Evidence for Q and A: the part of the source that was read. Last update: 17 October 2026.}\label{tab:constraint-provenance}\\
+\caption{Provenance of the constraints and results stated in this review and in the model builder (all statements except pure definitions; the full table, with definitions, explanations and the corrections made, is Table~\ref{S-tab:provenance-full} in the Supplement). Basis: M, derived here and checked symbolically (check IDs, Supplement Table~\ref{S-tab:symbolic-checks}); C, convention; Q, quoted from the source; A, adapted from the source; D, definition. Evidence for Q and A: the part of the source that was read. Where the parameter table of the model builder uses other symbols than the text, the rows follow the builder (for example $\mu$ for $n$ in T1.3, $\nu$ for $\mu$ in T2.10, $w$ for $\lambda$ in T2.14, $\psi$ for $\theta$ in T3.3, $\eta$ and $C$ for $n$ and $k$ in T3.5--T3.6, $\zeta$ for $\eta$ in $\Phi_y$.2). Last update: 19 October 2026.}\label{tab:constraint-provenance}\\
 \toprule ID & Constraint or result & Basis & Checks or evidence \\ \midrule \endfirsthead
 \toprule ID & Constraint or result & Basis & Checks or evidence \\ \midrule \endhead
 \bottomrule \endfoot
@@ -10,37 +10,40 @@
 G3 & $\theta>0$; $\theta=1$ is the logistic law & D, M & \checkmark\,S1 \\
 G5 & Without predators, $K$ is locally asymptotically stable iff $r\tau^{x}<\pi/2$; inconclusive at equality & M & \checkmark\,S6 \\
 G5b & Without predators, $K$ attracts all positive solutions for $r\tau^{x}\le\pi/2$ & A & \checkmark\,S6b; \cite{vandenberg2018}: full text (arXiv:\allowbreak 1704.00029v1, Thm.~1.5) \\
-G6 & Gompertz: $r\ln(K/x)\to\infty$ as $x\to0^{+}$; not Lipschitz at 0 but solutions unique & M & \checkmark\,S7, S7b \\
+G6 & Gompertz: $r\ln(K/x)\to\infty$ as $x\to0^{+}$; not Lipschitz at 0 but solutions unique; $x=0$ neither reached nor left in finite time unless immigration, constant yield or herd behaviour act at $x=0$ & M & \checkmark\,S7, S7b, S8d, S21 \\
 G7 & Strong Allee: $0<A<K$ & M & \checkmark\,S2a, S2c \\
 G8 & Weak Allee: $-K<A\le 0$; $A\le -K$ removes the effect & M, C & \checkmark\,S2b, S2d \\
-G9 & Strong Allee, prey alone: origin locally stable, outcome depends on initial density & M & \checkmark\,S2a \\
+G9 & Strong Allee, prey alone: origin locally stable, outcome depends on initial density; with prey immigration a small stable equilibrium replaces the origin & M & \checkmark\,S2a, S32a \\
 G9b & Strong Allee with a predator: heteroclinic loops and a threshold curve separating overexploitation from coexistence & Q & \cite{wang2011allee}: abstract \\
-G10 & Additive Allee: strong iff $b<K$ and $rb<\mu<r(K+b)^{2}/(4K)$; weak iff $rb^{2}/K<\mu<rb$ & M & \checkmark\,S3a, S3b, S3c, S3d, S3e \\
+G10 & Additive Allee: strong iff $b<K$ and $rb<\mu<r(K+b)^{2}/(4K)$; weak iff $rb^{2}/K<\mu\le rb$ (the borderline $\mu=rb$ grouped with the weak case) & M & \checkmark\,S3a, S3b, S3c, S3d, S3e \\
 G11 & Fear: $r>d$ & M & \checkmark\,S4 \\
 G13 & Perceived predation risk alone cut offspring production by 40\% & Q & \cite{zanette2011}: abstract \\
 G13b & Fear model: high fear excludes periodic solutions; low fear allows subcritical Hopf bifurcation and bistability & Q & \cite{wang2016fear}: abstract \\
 G14 & $0\le\varepsilon<1$; $\omega=2\pi/T>0$ & M & \checkmark\,S5 \\
 G15 & Seasonal forcing: periodic solutions, multiple attractors and chaos & D, Q & \cite{cushing1977}: title; \cite{rinaldi1993}: title \\
+G17 & Toxicant (T1.10): the prey alone persists only if $r_0-r_1C_0>0$ & M & \checkmark\,S42c \\
 \addlinespace
 \multicolumn{4}{@{}l}{\textit{Predation ($T_2$)}}\\[2pt]
 P2 & $h>0$; maximal intake $1/h$ & M & \checkmark\,S9 \\
 P3 & One handling time shared by all food items: $D_j=1+\sum_k a_kh_kx_k$ & M & \checkmark\,S12 \\
 P4 & Holling IV peaks at $\sqrt{G}$, $\sqrt{G}/(1-\phi)$ or $\xi+\sqrt{G}$ & M & \checkmark\,S10a, S10b, S10c \\
-P5 & Holling IV: at most two interior equilibria; Bogdanov--Takens bifurcation & M, Q & \checkmark\,S10d; \cite{xiao2001siam}: abstract \\
+P5 & Holling IV, one prey and one predator whose per-capita growth depends on prey density only: at most two interior equilibria; Bogdanov--Takens bifurcation & M, Q & \checkmark\,S10d; \cite{xiao2001siam}: abstract \\
 P7 & Beddington--DeAngelis, Crowley--Martin: $c\ge 0$, $c=0$ is Holling II & M & \checkmark\,S11a \\
 P8 & Hassell--Varley: $0<\gamma<1$ & M, C & \checkmark\,S11b \\
-P9 & Mutual interference: $0\le\nu<1$; for $\nu>0$ solutions from $y=0$ are not unique & M & \checkmark\,S11c, S11d \\
-P10 & Ratio dependence: Lipschitz after extension by 0, not differentiable at $(0,0)$; the origin can attract all orbits & M, Q & \checkmark\,S28, S28b; \cite{xiao2001rd}: abstract; \cite{kuang1998}: abstract \\
+P9 & Mutual interference: $0\le\nu<1$; for $\nu>0$ solutions from $y=0$ are not unique, unless a predator Allee effect, a gestation delay, predator immigration or a Leslie--Gower predator equation keeps them unique & M & \checkmark\,S11c, S11d, S33 \\
+P10 & Ratio dependence: Lipschitz after extension by 0, not differentiable at $(0,0)$; in the basic model with one logistic prey and one predator the origin can attract all orbits & M, Q & \checkmark\,S28, S28b; \cite{xiao2001rd}: abstract; \cite{kuang1998}: abstract \\
 P11 & Herd behaviour: $0<p<1$; $p=1/2$ for a planar herd & M & \checkmark\,S8c; \cite{ajraldi2011}: abstract \\
-P12 & Herd: not Lipschitz at 0; unique forward in time; prey can vanish in finite time, so not unique backward & M & \checkmark\,S8a, S8b, S8d \\
-P14 & Fixed-number refuge stabilises the Lotka--Volterra centre, a proportional one does not; refuges can destabilise other models & M, A & \checkmark\,S29a, S29b; \cite{maynardsmith1974}: not accessed; \cite{mcnair1986}: abstract \\
-P16 & $w\ge 0$; cooperation gives a component Allee effect & M & \checkmark\,S17 \\
-P17 & Cooperation can produce demographic Allee effects and predator collapse & Q & \cite{teixeiraalves2017}: abstract \\
+P12 & Herd: not Lipschitz at 0; unique forward in time; prey can vanish in finite time, so not unique backward (not with prey immigration; with a fixed-number refuge the singular point is $x=\xi$) & M & \checkmark\,S8a, S8b, S8d, S30 \\
+P14 & Fixed-number refuge ($\xi>0$) stabilises the Lotka--Volterra centre, a proportional one does not; refuges can destabilise other models & M, A & \checkmark\,S29a, S29b; \cite{maynardsmith1974}: not accessed; \cite{mcnair1986}: abstract \\
+P16 & $w\ge 0$; for $w>0$ with one food item, cooperation gives a component Allee effect for Holling I--IV and herd responses; with Beddington--DeAngelis iff $w>ac$; with Crowley--Martin near $y=0$ iff $w>ac(1+ahx)$, never at high $y$; never with ratio dependence; with Hassell--Varley or mutual interference only above a predator density; with additional food iff $e(1+a^{F}h^{F}\Lambda)>e^{F}a^{F}\Lambda h$ & M & \checkmark\,S17, S31a, S31b, S31c, S31d, S31e, S31f \\
+P17 & Cooperation can produce demographic Allee effects and predator collapse (stated where the per-capita gain increases with predator density) & Q & \cite{teixeiraalves2017}: abstract \\
 P18 & Additional food: loss $ax/(1+ahx+a_Ah_AA)$, gain $(eax+e_Aa_AA)/(1+ahx+a_Ah_AA)$; $\eta=a_A/a$, $\alpha=h_A/h$, $e_A=e$ in Srinivasu et al. & M, A & \checkmark\,S12, S12b, S12c; \cite{srinivasu2007}: abstract \\
+P19 & Holling II (T2.2): a predator with death rate $m$ persists only if $e/h>m$ & M & \checkmark\,S9, S42f \\
+P20 & Power-law interactions (T2.16), $\beta<1$: the prey loss $axy^{\beta}$ is not Lipschitz at $y=0$, but the predator equation keeps the factor $y$, so $y=0$ is invariant and solutions from $y=0$ are unique (unlike T2.10) & M & \checkmark\,S43 \\
 \addlinespace
 \multicolumn{4}{@{}l}{\textit{Predator ($T_3$, $T_4$)}}\\[2pt]
 N1 & $e>0$; $e<1$ when densities are biomass or energy & M & \checkmark\,S13a \\
-N3 & $\psi>0$; predator Allee makes $y=0$ locally stable; $T_3=e\,q(y)\,T_2$ & M & \checkmark\,S16 \\
+N3 & $\psi>0$; predator Allee makes $y=0$ locally stable, unless predator immigration (a small stable equilibrium instead) or constant-yield harvest ($y=0$ reached in finite time); $T_3=e\,q(y)\,T_2$ & M & \checkmark\,S16, S32b \\
 N5 & Delay-dependent parameters: stability switches, often stable, unstable, stable again; oscillations in a window of maturation delays & Q & \cite{beretta2002}: abstract; \cite{gourley2004}: abstract \\
 N6 & $\delta^{J}\ge 0$; juvenile survival $\exp(-\delta^{J}\tau)$ & M & \checkmark\,S15 \\
 N9 & Leslie--Gower: $s,\eta>0$; $\eta$ = predators supported per unit prey & M & \checkmark\,S18c \\
@@ -49,7 +52,7 @@ N10 & Leslie--Gower singular without prey; $C>0$ removes it & M & \checkmark\,S1
 \multicolumn{4}{@{}l}{\textit{Predators eating predators}}\\[2pt]
 Y2 & $e^{y}>0$; $e^{y}<1$ when densities are biomass or energy & M & \checkmark\,S13a \\
 Y3 & Cannibalism: $e^{y}_{ll}\le 1$ in any units; if violated, blow-up in finite time for $h=0$, at most exponential growth for $h>0$ & M & \checkmark\,S13a, S14a, S14b, S14c \\
-Y4 & Cannibalism can stabilise and raise both standing stocks & Q & \cite{kohlmeier1995}: abstract \\
+Y4 & Cannibalism can stabilise and raise both standing stocks (one prey, one predator) & Q & \cite{kohlmeier1995}: abstract \\
 Y5 & Intraguild predation: coexistence needs the intraguild prey to be the better competitor and the intraguild predator to gain substantially; most likely at intermediate productivity & Q & \cite{holt1997}: abstract; \cite{polis1989}: not accessed \\
 Y6 & Holling II food chains can be chaotic & Q & \cite{hastings1991}: abstract \\
 Y7 & Reciprocal predation between two predators: existence and stability of equilibria, Hopf bifurcation at the two positive equilibria & Q & \cite{almohanna2025}: abstract \\
@@ -57,15 +60,21 @@ Y8 & No cannibalism with Leslie--Gower & C &  \\
 Y9 & Refuge, habitat, cooperation, herd and group defence act on prey links only & C &  \\
 \addlinespace
 \multicolumn{4}{@{}l}{\textit{Added terms ($\Phi$)}}\\[2pt]
-H2 & Effort harvest: prey alone persists iff $qE<r$ & M & \checkmark\,S19a, S19b \\
-H3 & Constant yield, logistic prey: $H<rK/4$ & M & \checkmark\,S20 \\
+H2 & Effort harvest: prey alone persists iff $qE<r$ (without prey immigration) & M & \checkmark\,S19a, S19b \\
+H3 & Constant yield, logistic prey: a positive equilibrium needs $H\le rK/4$ and a stable one $H<rK/4$ (without prey immigration or seasonal forcing) & M & \checkmark\,S20, S20b \\
 H4 & Constant yield must stop at zero density & M & \checkmark\,S21 \\
-H5 & $I\ge 0$; immigration makes the Lotka--Volterra centre asymptotically stable & M, A & \checkmark\,S22; \cite{tahara2018}: full text (Eq.~(1), Case A1 ($\gamma=bc/2m$); Eq.~(4), Table~1 and Suppl.\ Tables S2--S5) \\
+H5 & $I\ge 0$; immigration makes the Lotka--Volterra centre asymptotically stable (stated only for the classical model) & M, A & \checkmark\,S22; \cite{tahara2018}: full text (Eq.~(1), Case A1 ($\gamma=bc/2m$); Eq.~(4), Table~1 and Suppl.\ Tables S2--S5) \\
 H7 & Prey eat predators: $e^{x}>0$; $e^{x}<1$ in biomass units & M & \checkmark\,S13b \\
+H9 & Predator harvesting ($\Phi_y$.1) with logistic prey and linear predation: the predator persists iff $m+q_2E_2<eaK$ & M & \checkmark\,S42a \\
+H10 & Anti-predator attack ($\Phi_y$.2): the predator cannot persist if $\zeta\ge ea$ & M & \checkmark\,S42b \\
+\addlinespace
+\multicolumn{4}{@{}l}{\textit{New state variables ($\mathbf z$)}}\\[2pt]
+Z1 & Competing predators (z.9): with one prey, only the predator with the lowest break-even prey density ($m_i/(e_ia_i)$ for linear responses) persists at equilibrium & M, Q & \checkmark\,S42d; \cite{hsu1978}: abstract; \cite{armstrong1980}: abstract \\
+Z2 & Metapopulation (z.16): the occupied fraction persists iff $c>\epsilon$ & M & \checkmark\,S42e \\
 \addlinespace
 \multicolumn{4}{@{}l}{\textit{Framework and general statements}}\\[2pt]
-F2 & Turing instability iff $D^{y}J_{11}+D^{x}J_{22}>0$ and $(D^{y}J_{11}+D^{x}J_{22})^{2}>4D^{x}D^{y}\det J$; impossible for $J_{22}=0$; possible with $J_{22}<0$ (faster predator) or $J_{22}>0$ (faster prey) & M & \checkmark\,S27a, S27b, S27c, S27d, S27e, S27f; \cite{segel1972}: not accessed \\
-F3 & It\^o noise, prey alone: stationary density iff $r>\sigma^{2}/2$ (logistic, $\theta$-logistic), $r-d>\sigma^{2}/2$ (fear), always (Gompertz); extinction a.s.\ when reversed & M & \checkmark\,S26a, S26b, S26c, S26d, S26e, S26f, S26g; \cite{rudnicki2003}: not accessed \\
+F2 & Turing instability (one prey, one predator, no delay or seasonal forcing) iff $D^{x}D^{y}\mu_k^{2}-(D^{y}J_{11}+D^{x}J_{22})\mu_k+\det J<0$ for a no-flux eigenvalue $\mu_k>0$ of $-\Delta$ on $\Omega$; such a band exists iff $D^{y}J_{11}+D^{x}J_{22}>0$ and $(D^{y}J_{11}+D^{x}J_{22})^{2}>4D^{x}D^{y}\det J$; impossible for $J_{22}=0$; possible with $J_{22}<0$ (faster predator) or $J_{22}>0$ (faster prey) & M & \checkmark\,S27a, S27b, S27c, S27d, S27e, S27f; \cite{segel1972}: not accessed \\
+F3 & It\^o noise ($\sigma>0$), prey alone: stationary density iff $r>\sigma^{2}/2$ (logistic, $\theta$-logistic), $r-d>\sigma^{2}/2$ (fear, $c^{x}>0$), always (Gompertz); extinction a.s.\ when reversed; not stated with prey immigration or seasonal forcing. Positivity: not with constant yield, and the herd loss $x^{p}$ is not covered & M & \checkmark\,S26a, S26b, S26c, S26d, S26e, S26f, S26g; \cite{rudnicki2003}: not accessed \\
 F4 & Non-negative orthant invariant, except with constant-yield harvest & M & \checkmark\,S30, S21 \\
 F6 & Regularity: Gompertz unique; herd unique forward only; interference not unique forward; ratio dependence Lipschitz; Leslie--Gower singular & M & \checkmark\,S7b, S8d, S11d, S28b, S18a \\
 F7 & Demographic noise of order $N^{-1/2}$ sustains large quasi-cycles around a stable equilibrium & Q & \cite{mckane2005}: full text (arXiv:\allowbreak q-bio/\allowbreak 0501023, Eqs.~(3), (6), (9); Fig.~2) \\
@@ -73,8 +82,34 @@ F7 & Demographic noise of order $N^{-1/2}$ sustains large quasi-cycles around a 
 \multicolumn{4}{@{}l}{\textit{Classical results}}\\[2pt]
 K1 & Lotka--Volterra: centre at $(m/ea,\,r/a)$, first integral $H$ & M & \checkmark\,S23 \\
 K2 & Logistic prey, Holling I: interior equilibrium iff $m<eaK$, globally stable & M & \checkmark\,S24 \\
-K3 & Rosenzweig--MacArthur: $x^{*}=m/[a(e-mh)]$, exists iff $e>mh$, $x^{*}<K$; then stable iff $x^{*}>\tfrac12(K-1/ah)$ & M & \checkmark\,S25a, S25b, S25c \\
+K3 & Rosenzweig--MacArthur: $x^{*}=m/[a(e-mh)]$, exists iff $e>mh$, $x^{*}<K$; then hyperbolic and stable iff $x^{*}>\tfrac12(K-1/ah)$, unstable below, weakly attracting at equality (K4) & M & \checkmark\,S25a, S25b, S25c \\
 K4 & Supercritical Hopf at $x^{*}=x_{\rm hump}$; unique limit cycle beyond it; paradox of enrichment & M, Q & \checkmark\,S25d0, S25d, S25e; \cite{cheng1981}: abstract; \cite{rosenzweig1971}: abstract \\
+\addlinespace
+\multicolumn{4}{@{}l}{\textit{Entries added after the scoping review}}\\[2pt]
+X1 & Food-limited growth (T1.12): $c>0$; $c\to\infty$ gives the logistic law; the per-capita rate falls from $r$ at $x=0$ to $0$ at $x=K$, so the prey-only equilibrium stays $K$ & D, M & \checkmark\,S34a, S34b, S34c; \cite{smith1963}: full text (Eq.~(5) and definitions, pp.~652--653) \\
+X2 & Sexual reproduction (T3.7): births in proportion to encounters of males and females, $cy^{2}$, with a Leslie--Gower loss $wy^{2}/(x+D)$ & A & \cite{upadhyay1997}: full text (Eq.~(1c) and text, p.~1934) \\
+X3 & Sexual reproduction (T3.7): the per-capita gain is positive iff $x>w/c-D$; if $x\ge x_0>w/c-D$ for all $t$, $y$ blows up in finite time & M & \checkmark\,S35a, S35b \\
+X4 & Allelopathy ($\Phi_x$.7): a predator toxin kills prey at per-capita rate $\gamma xy^{2}$; between two competitors the per-capita rates are $\gamma_iN_1N_2$ & Q & \cite{fitria2015}: full text (Eq.~(1), p.~59); \cite{chattopadhyay1996}: full text (Eq.~(1), p.~287) \\
+X5 & Advection (S.7): logistic prey alone spread upstream iff $v<2\sqrt{rd_1}$ & A & \cite{hilker2010}: full text (Eqs.~(1)--(2) and invasion speeds, pp.~176--177) \\
+X6 & Spatial heterogeneity (S.8): with lethal boundaries, logistic prey with growth rate $r(\xi)$ of either sign persist if $1/d_1>\lambda_1^{+}(r)$; fragmenting favourable habitat hinders persistence & A & \cite{cantrell1989}: abstract; \cite{du2004}: full text (model (1.1), p.~332) \\
+X7 & Feedback control (M.3), logistic prey: the equilibrium falls to $K/(1+cqK/f)$ and is locally asymptotically stable & M & \checkmark\,S36a, S36b; \cite{gopalsamy1993}: full text (model in the abstract and Sec.~1) \\
+X8 & Hybrid control (M.3): $\alpha F+(1-\alpha)\,\mathrm{id}$ keeps the fixed points and maps each eigenvalue $\lambda$ to $\alpha\lambda+1-\alpha$ & M & \checkmark\,S36c; \cite{luo2003}: full text (Eq.~(2), p.~776) \\
+X9 & Z-type control (M.3): the deviation $x-x_d$ from a target decays exponentially & Q & \cite{lacitignola2016}: full text (Sec.~2.1, Eq.~(2), p.~11) \\
+X10 & Economic profit constraint (M.4): with one harvested species and zero profit, the effort settles where rent vanishes, $x=c_x/p_x$ & M & \checkmark\,S37; \cite{zhang2009bioecon}: full text (model (1), p.~579) \\
+X11 & Economic profit constraint (M.4): a singularity-induced bifurcation occurs at a critical profit & Q & \cite{zhang2009bioecon}: full text (abstract and Sec.~3) \\
+X12 & Mutualist of the prey (z.20): predation decreases with the mutualist, which gains from the prey and is self-limited; its effect on prey growth may have either sign & Q & \cite{rai1983}: full text (hypotheses (H1), (G1), (P1), pp.~16--17) \\
+X13 & A protective population that lowers predation on the prey (human shield) is a special case of z.20 & C &  \\
+X14 & Scavenger (z.21): gains from kills and natural deaths at no cost to $x$ or $y$; self-limitation keeps it bounded; it may also prey on $x$ & Q & \cite{nolting2008}: full text (Eq.~(3), p.~217); \cite{previte2013}: full text (Eq.~(3.1), p.~528) \\
+X15 & Sex structure (z.22): one sex produces both; the sexes share density dependence and are eaten alike & Q & \cite{xiong2007}: full text (model (1.1), p.~1214) \\
+X16 & Lateral dimorphism (z.23): with rates symmetric between morphs, the symmetric state is invariant & M & \checkmark\,S38; \cite{nakajima2004}: full text (Model~1, p.~693) \\
+X17 & Lateral dimorphism (z.23): when cross predation dominates, the morph frequencies oscillate around $1/2$, and a missing morph can invade & Q & \cite{nakajima2004}: full text (abstract, p.~692); \cite{takahashi1994}: abstract \\
+X18 & Power-law interactions (T2.16): Gilpin--Ayala predator--prey systems raise each density in each per-capita rate to its own power (prey loss $ay^{\beta}$, predator gain $e\,x^{p}$, self-limitation $\delta y^{q}$) & Q & \cite{liao2007gilpin}: full text (systems (1.1) and (1.6), pp.~500--501) \\
+X19 & Power-law interactions (T2.16): with $0<p<1$ the predator gain exceeds the prey loss at low prey density, so in biomass units the model creates biomass & M & \checkmark\,S39 \\
+X20 & Independent numerical response (T3.8): the predator's demographic rates can be modelled as their own function of food availability (demographic numerical response) & Q & \cite{bayliss2002}: abstract \\
+X21 & Independent numerical response (T3.8): in biomass units the gain may not exceed the intake, $e\,g\le f$; a Monod--Haldane gain with a Beddington--DeAngelis loss violates this as $y\to\infty$ & M & \checkmark\,S40 \\
+X22 & Starvation mortality (T4.4): extra death rate $T^{-1}\ln(\bar f/f)$ of a predator receiving the ration $f\le\bar f$; zero at satiation, decreasing in the ration, unbounded as $f\to0$ & Q, M & \checkmark\,S41a; \cite{arditi1978}: full text (Eqs.~(10)--(13), pp.~179--180) \\
+X23 & Starvation mortality (T4.4): at a constant ration $f_1$ and without births, the hunger term alone shrinks the predator by the factor $f_1/\bar f$ in time $T$ & Q, M & \checkmark\,S41b; \cite{arditi1978}: full text (Eq.~(14) and Fig.~3, pp.~180--181) \\
+X25 & Taxis (S.3): the prey-taxis term also models immature prey moving toward higher densities of mature prey & Q & \cite{li2023taxis}: full text (model (3) and its explanation, p.~18593) \\
 \addlinespace
 \end{longtable}
 \endgroup
